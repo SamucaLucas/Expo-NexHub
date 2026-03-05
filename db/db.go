@@ -14,7 +14,7 @@ var DB *sql.DB
 func ConectaComBanco() {
 	// CONFIGURAÇÃO: Ajuste user, password e dbname conforme o seu computador!
 	// Se tiver senha, coloque password=sua_senha
-	connStr := "user=samucael dbname=nexhub host=localhost password=2784 sslmode=disable"
+	connStr := "user=nexhub dbname=db_expo_nexhub host=db-expo-nexhub.postgres.uhserver.com password=SaMuCa@2784 sslmode=disable"
 
 	var err error
 	DB, err = sql.Open("postgres", connStr)
