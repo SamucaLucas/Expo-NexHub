@@ -1,0 +1,158 @@
+{{ define "MeusProjetos" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Meus Projetos - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <Style>
+        .card-oculto {
+            border: 1px solid #ef4444 !important;
+            /* Borda Vermelha */
+            background: rgba(239, 68, 68, 0.05) !important;
+            /* Fundo Avermelhado */
+        }
+
+        .card-oculto img {
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+
+        .aviso-oculto {
+            width: 100%;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .btn-new-project {
+                width: 100%;
+            }
+        }
+    </Style>
+</head>
+
+<body style="background-color: #09090b;">
+    <div
+        style="position: fixed; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, var(--brand-blue), transparent 70%); opacity: 0.15; filter: blur(100px); z-index: 0;">
+    </div>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
+                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px;">
+            </a>
+            <nav class="sidebar-menu">
+                <a href="/dev/dashboard" class="sidebar-item" title="Início">
+                    <i class="ph ph-house"></i>
+                </a>
+                <a href="/dev/meus-projetos" class="sidebar-item active" title="Meus Projetos">
+                    <i class="ph ph-folder"></i>
+                </a>
+                <a href="/chat" class="sidebar-item" title="Mensagens">
+                    <i class="ph ph-chat-circle-dots"></i>
+                    {{ if gt .NaoLidas 0 }}
+                    <span class="badge-dot" style="margin-left: -5.5px; margin-bottom: 25px;"></span>
+                    {{ end }}
+                </a>
+                <a href="/dev/perfil" class="sidebar-item" title="Configurações">
+                    <i class="ph ph-gear"></i>
+                </a>
+            </nav>
+            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;"
+                title="Sair">
+                <i class="ph ph-sign-out"></i>
+            </a>
+        </aside>
+        <main class="main-content">
+            <div class="dash-header">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Meus Projetos</h1>
+                    <p style="color: var(--text-gray);">Gerencie seus portfólios e códigos</p>
+                </div>
+                <a href="/dev/novo-projeto" class="btn btn-primary btn-glow btn-new-project">
+                    <i class="ph ph-plus" style="margin-right: 5px;"></i> Novo Projeto
+                </a>
+            </div>
+            {{ if not .Projetos }}
+            <div class="empty-state-box">
+                <div class="empty-state"
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
+                    <div class="empty-icon">
+                        <i class="ph ph-folder-notch-open"></i>
+                    </div>
+                    <p style="color: var(--text-gray); font-size: 1.1rem; margin: 0;">
+                        Você ainda não tem projetos cadastrados.
+                    </p>
+                    <a href="/dev/novo-projeto" class="btn btn-primary">
+                        Criar Primeiro Projeto
+                    </a>
+                </div>
+            </div>
+            {{ else }}
+
+            <div class="projects-grid">
+                {{ range .Projetos }}
+
+                <div class="project-card {{ if eq .Status " Oculto" }}card-oculto{{ end }}">
+
+                    {{ if .ImagemCapa }}
+                    <img src="{{ .ImagemCapa }}" alt="{{ .Titulo }}" class="project-cover">
+                    {{ else }}
+                    <img src="https://via.placeholder.com/400x200?text=Sem+Capa" alt="Sem Capa" class="project-cover">
+                    {{ end }}
+
+                    <div class="card-content"
+                        style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; align-items: center;">
+
+                        {{ if eq .Status "Oculto" }}
+                        <div class="aviso-oculto">
+                            <i class="ph ph-warning-octagon"
+                                style="font-size: 1.2rem; flex-shrink: 0; color: #ef4444;"></i>
+                            <div>
+                                <strong style="color: #ef4444;">Visibilidade Restrita</strong><br>
+                                Este projeto foi ocultado pela moderação.
+                            </div>
+                        </div>
+                        {{ end }}
+
+                        <h3
+                            style="color: white; margin-bottom: 10px; font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                            {{ .Titulo }}
+                        </h3>
+
+                        <span class="status-tag status-{{ .Status }}">
+                            {{ .Status }}
+                        </span>
+
+                        <div class="actions" style="width: 100%; display: flex; gap: 10px; margin-top: auto;">
+                            <a href="/dev/projeto/editar?id={{ .Id }}" class="btn btn-outline"
+                                style="flex: 1; justify-content: center;">Editar</a>
+                        </div>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+    </div>
+    </div>
+    </main>
+    </div>
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

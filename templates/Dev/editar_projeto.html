@@ -1,0 +1,585 @@
+{{ define "EditarProjeto" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Editar Projeto - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* --- CORREÇÃO DO BOTÃO "VER PÁGINA PÚBLICA" --- */
+        .btn-header-responsive {
+            color: var(--brand-teal) !important;
+            border-color: rgba(0, 255, 209, 0.3) !important;
+            width: auto;
+            /* Desktop: Ocupa apenas o espaço necessário */
+            white-space: nowrap;
+            /* Impede que o texto quebre */
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .btn-header-responsive {
+                width: 100%;
+                /* Mobile: Ocupa a largura toda */
+                margin-top: 15px;
+                /* Dá um espaço do título */
+                display: flex;
+                justify-content: center;
+            }
+
+            /* Garante que o header quebre linha no mobile */
+            .dash-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
+                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px;">
+            </a>
+            <nav class="sidebar-menu">
+                <a href="/dev/dashboard" class="sidebar-item" title="Início"><i class="ph ph-house"></i></a>
+                <a href="/dev/meus-projetos" class="sidebar-item active" title="Meus Projetos"><i
+                        class="ph ph-folder"></i></a>
+                
+            </nav>
+            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;"><i
+                    class="ph ph-sign-out"></i></a>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="dash-header">
+                <div>
+                    <a href="/dev/meus-projetos"
+                        style="text-decoration: none; color: var(--text-gray); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
+                        <i class="ph ph-arrow-left"></i> Voltar
+                    </a>
+                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Editar Projeto</h1>
+                    <p style="color: var(--text-gray);">Gerencie equipe, galeria e informações</p>
+                </div>
+
+                <a href="/projeto/detalhes?id={{ .Projeto.Id }}" target="_blank"
+                    class="btn btn-ghost btn-header-responsive">
+                    <i class="ph ph-eye" style="margin-right: 5px;"></i> Ver Página Pública
+                </a>
+            </div>
+
+            <div class="metrics-row">
+
+                <div class="metric-box">
+                    <div
+                        style="background: rgba(0, 255, 209, 0.1); padding: 12px; border-radius: 8px; color: var(--brand-teal);">
+                        <i class="ph ph-eye" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <span
+                            style="display: block; font-size: 1.8rem; font-weight: 700; color: white; line-height: 1;">
+                            {{ .Projeto.Visualizacoes }}
+                        </span>
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">Visualizações Totais</span>
+                    </div>
+                </div>
+
+                <div class="metric-box">
+                    <div
+                        style="background: rgba(255, 153, 0, 0.1); padding: 12px; border-radius: 8px; color: var(--brand-orange);">
+                        <i class="ph ph-bookmark-simple" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <span
+                            style="display: block; font-size: 1.8rem; font-weight: 700; color: white; line-height: 1;">
+                            {{ .Saves }}
+                        </span>
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">Salvo por Empresas</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="settings-container">
+
+                <form action="/dev/projeto/atualizar" method="POST" enctype="multipart/form-data">
+
+                    <input type="hidden" name="id" value="{{ .Projeto.Id }}">
+
+                    <div class="form-group">
+                        <label class="form-label">Capa Principal</label>
+                        <div
+                            style="position: relative; width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+
+                            {{ if .Projeto.ImagemCapa }}
+                            <img id="project-preview" src="{{ .Projeto.ImagemCapa }}"
+                                style="width: 100%; height: 100%; object-fit: cover;"> {{ else }}
+                            <img id="project-preview" src="https://via.placeholder.com/800x400?text=Sem+Capa"
+                                style="width: 100%; height: 100%; object-fit: cover;"> {{ end }}
+
+                            <label for="upload-capa" class="btn btn-primary"
+                                style="position: absolute; bottom: 15px; right: 15px; font-size: 0.8rem; cursor: pointer;">
+                                <i class="ph ph-camera"></i> Alterar Capa
+                            </label>
+                            <input type="file" id="upload-capa" name="imagem" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 30px;">
+                        <label class="form-label">Adicionar Mais Fotos à Galeria</label>
+
+                        <label for="upload-galeria"
+                            style="border: 2px dashed rgba(255,255,255,0.1); padding: 30px; text-align: center; border-radius: 12px; cursor: pointer; display: block; transition: 0.2s; background: rgba(255,255,255,0.02);"
+                            onmouseover="this.style.borderColor='var(--brand-teal)'; this.style.background='rgba(0, 255, 209, 0.05)'"
+                            onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'">
+
+                            <i class="ph ph-images"
+                                style="font-size: 2.5rem; color: var(--text-gray); margin-bottom: 10px;"></i>
+                            <p style="color: white; font-weight: 600; margin-bottom: 5px;">Clique para selecionar fotos
+                            </p>
+                            <p style="color: var(--text-gray); font-size: 0.9rem;">(Você pode selecionar várias de uma
+                                vez)</p>
+
+                        </label>
+
+                        <input type="file" id="upload-galeria" name="galeria" multiple accept="image/*"
+                            style="display: none;">
+                        <div id="preview-novas-fotos"
+                            style="display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 30px;">
+                        <label class="form-label"
+                            style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Galeria Atual</span>
+                            <span style="font-size: 0.85rem; color: var(--text-gray);">Clique no lixo para
+                                remover</span>
+                        </label> {{ if .Projeto.ImagensGaleria }}
+                        <div class="gallery-scroll-container"
+                            style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;">
+
+                            {{ range .Projeto.ImagensGaleria }}
+                            <div class="gallery-item"
+                                style="min-width: 180px; height: 120px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); position: relative;">
+
+                                <img src="{{ .Caminho }}" style="width: 100%; height: 100%; object-fit: cover;">
+
+                                <a href="/projeto/galeria/deletar?id_img={{ .Id }}&id_projeto={{ $.Projeto.Id }}"
+                                    style="position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.8); color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.2s;"
+                                    onmouseover="this.style.background='#ef4444'"
+                                    onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta imagem?')">
+                                    <i class="ph ph-trash" style="font-size: 1rem;"></i>
+                                </a>
+
+                            </div>
+                            {{ end }}
+
+                        </div>
+                        {{ else }}
+                        <p style="color: var(--text-gray); font-size: 0.9rem; font-style: italic;">Nenhuma foto extra na
+                            galeria ainda.</p>
+                        {{ end }}
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 30px 0;">
+
+                    <div class="form-group">
+                        <label class="form-label">Nome do Projeto</label>
+                        <input type="text" class="form-input" name="titulo" value="{{ .Projeto.Titulo }}" required>
+                    </div>
+
+                    <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+
+                        <div class="form-group">
+                            <label class="form-label">Categoria</label>
+
+                            <select class="form-input" name="categoria" id="select-categoria"
+                                onchange="verificarOutros()">
+                                <option value="Tecnologia">Tecnologia Geral</option>
+                                <option value="Educacao">Educação</option>
+                                <option value="Mineracao">Mineração</option>
+                                <option value="Saude">Saúde</option>
+                                <option value="Comercio">Comércio / Varejo</option>
+                                <option value="Agro">Agronegócio</option>
+                                <option value="Outros">Outros (Especificar)</option>
+                            </select>
+
+                            <div id="campo-outros" style="display: none; margin-top: 10px;">
+                                <label class="form-label"
+                                    style="font-size: 0.85rem; color: var(--brand-teal);">Especifique a
+                                    categoria:</label>
+                                <input type="text" class="form-input" name="outra_categoria" id="input-outros"
+                                    placeholder="Ex: Games, IA, Robótica...">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cidade</label>
+                            <select class="form-input" name="cidade" id="select-cidade">
+                                <option value="Canaã dos Carajás">Canaã dos Carajás</option>
+                                <option value="Parauapebas">Parauapebas</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" name="status" id="select-status">
+                                <option value="Concluido">🟢 Concluído</option>
+                                <option value="Em Andamento">🟡 Em Andamento</option>
+                                <option value="Planejado">🔵 Planejado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-input" name="descricao" rows="5">{{ .Projeto.Descricao }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tecnologias Utilizadas</label>
+
+                        <div class="tech-grid">
+
+                            {{ range $techOpcao := .TodasTechs }} {{ $marcada := false }} {{ range $.Projeto.Tecnologias
+                            }} {{ if eq . $techOpcao.Nome }} {{ $marcada = true }} {{ end }} {{ end }}
+
+                            <input type="checkbox" id="tech-edit-{{ $techOpcao.Nome }}" name="techs"
+                                value="{{ $techOpcao.Nome }}" class="tech-checkbox-input" {{ if $marcada }} checked {{
+                                end }}>
+
+                            <label for="tech-edit-{{ $techOpcao.Nome }}" class="tech-checkbox-label">
+                                <i class="ph ph-check-bold tech-check-icon"></i>
+                                {{ $techOpcao.Nome }}
+                            </label> {{ end }}
+
+                        </div>
+                        <small style="color: #666; font-size: 0.8rem; margin-top: 8px; display: block;">Selecione para
+                            adicionar ou remover.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Link do Repositório (GitHub/GitLab)</label>
+                        <div style="position: relative;">
+                            <i class="ph ph-github-logo"
+                                style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 1.2rem;"></i>
+
+                            <input type="url" class="form-input" name="link_repositorio" value="{{ .Projeto.LinkRepo }}"
+                                placeholder="https://github.com/seu-usuario/projeto" style="padding-left: 45px;">
+                        </div>
+                    </div>
+
+                    <div class="form-actions"
+                        style="margin-top: 40px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; gap: 15px;">
+
+                        <a href="/dev/projeto/deletar?id={{ .Projeto.Id }}" class="btn btn-ghost"
+                            style="color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); text-decoration: none;"
+                            onclick="return confirm('Tem certeza absoluta? Isso apagará o projeto para sempre.');">
+                            <i class="ph ph-trash" style="margin-right: 5px;"></i> Excluir Projeto
+                        </a>
+
+                        <div style="display: flex; gap: 15px;">
+                            <a href="/dev/meus-projetos" class="btn btn-ghost">Cancelar</a>
+                            <button type="submit" class="btn btn-primary" style="padding: 12px 40px;">
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+                <div id="equipe-section"
+                    style="margin-top: 50px; padding-top: 30px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: white; font-size: 1.4rem;">Equipe do Projeto</h3>
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">Gerencie quem trabalha com
+                            você</span>
+                    </div>
+
+                    <div class="team-list" style="margin-bottom: 30px;">
+                        {{ range .Projeto.Equipe }}
+                        <div class="team-member-card"
+                            style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <a href="/talento/detalhes?id={{ .IdUsuario }}" target="_blank"
+                                    style="display: flex; align-items: center; gap: 15px; text-decoration: none; flex-grow: 1; cursor: pointer;">
+                                    {{ if .Foto }}
+                                    <img src="{{ .Foto }}"
+                                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"> {{
+                                    else }}
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .Nome }}"
+                                        style="width: 40px; height: 40px; border-radius: 50%;"> {{ end }}
+                                    <div>
+                                        <strong style="color: white; display: block;">{{ .Nome }}</strong>
+                                        <span style="color: var(--brand-teal); font-size: 0.85rem;">{{ .Funcao }}</span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <a href="/dev/projeto/equipe/remover?id_projeto={{ $.Projeto.Id }}&id_usuario={{ .IdUsuario }}"
+                                onclick="return confirm('Remover este membro da equipe?')"
+                                style="color: #ef4444; text-decoration: none; padding: 8px; border-radius: 6px; transition: background 0.2s;"
+                                onmouseover="this.style.background='rgba(239,68,68,0.1)'"
+                                onmouseout="this.style.background='transparent'">
+                                <i class="ph ph-trash" style="font-size: 1.2rem;"></i>
+                            </a>
+                        </div>
+                        {{ else }}
+                        <p
+                            style="color: var(--text-gray); font-style: italic; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; text-align: center;">
+                            Ainda não há membros adicionados (apenas você é o líder).
+                        </p>
+                        {{ end }}
+                    </div>
+
+                    <div
+                        style="background: rgba(0, 255, 209, 0.05); padding: 25px; border-radius: 12px; border: 1px dashed var(--brand-teal);">
+                        <h4
+                            style="color: var(--brand-teal); margin-bottom: 15px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="ph ph-user-plus"></i> Adicionar Membro
+                        </h4>
+
+                        <form action="/dev/projeto/equipe/adicionar" method="POST" style="position: relative;">
+                            <input type="hidden" name="id_projeto" value="{{ .Projeto.Id }}">
+                            <input type="hidden" id="selected_user_id" name="id_usuario" required>
+
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+
+                                <div style="flex: 2; min-width: 250px; position: relative;">
+                                    <label
+                                        style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 5px; display: block;">Buscar
+                                        Desenvolvedor</label>
+                                    <div style="position: relative;">
+                                        <i class="ph ph-magnifying-glass"
+                                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray);"></i>
+                                        <input type="text" id="search_user" class="form-input"
+                                            placeholder="Digite o nome..." autocomplete="off"
+                                            style="padding-left: 35px;">
+                                    </div>
+
+                                    <div id="search_results"
+                                        style="position: absolute; top: 105%; left: 0; width: 100%; background: #18181b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 100; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                                    </div>
+                                </div>
+
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label
+                                        style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 5px; display: block;">Função
+                                        / Cargo</label>
+                                    <input type="text" name="funcao_membro" class="form-input"
+                                        placeholder="Ex: Backend, Designer..." required>
+                                </div>
+
+                                <div style="display: flex; align-items: end;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="height: 46px; padding: 0 25px;">
+                                        Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script>
+        // 1. Função que roda assim que a página carrega
+        document.addEventListener('DOMContentLoaded', function () {
+            // CORREÇÃO: .Categoria -> .Projeto.Categoria
+            const categoriaSalva = "{{ .Projeto.Categoria }}";
+            const select = document.getElementById('select-categoria');
+            const divOutros = document.getElementById('campo-outros');
+            const inputOutros = document.getElementById('input-outros');
+
+            // Tenta achar a categoria salva nas opções padrão do select
+            let encontrou = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === categoriaSalva) {
+                    select.value = categoriaSalva;
+                    encontrou = true;
+                    break;
+                }
+            }
+
+            // Se NÃO encontrou
+            if (!encontrou && categoriaSalva !== "") {
+                select.value = "Outros";
+                divOutros.style.display = 'block';
+                inputOutros.value = categoriaSalva;
+                inputOutros.required = true;
+            }
+
+            // CORREÇÃO: Marca Cidade e Status via JS para limpar o HTML
+            const cidadeSalva = "{{ .Projeto.Cidade }}";
+            const statusSalvo = "{{ .Projeto.Status }}";
+
+            const selCidade = document.getElementById('select-cidade');
+            if (selCidade) selCidade.value = cidadeSalva;
+
+            const selStatus = document.getElementById('select-status');
+            if (selStatus) selStatus.value = statusSalvo;
+        });
+
+        // 2. Função que roda quando o usuário muda o select manualmente
+        function verificarOutros() {
+            const select = document.getElementById('select-categoria');
+            const divOutros = document.getElementById('campo-outros');
+            const inputOutros = document.getElementById('input-outros');
+
+            if (select.value === 'Outros') {
+                divOutros.style.display = 'block';
+                inputOutros.required = true;
+                inputOutros.value = ""; // Limpa para digitar algo novo
+            } else {
+                divOutros.style.display = 'none';
+                inputOutros.required = false;
+            }
+        }
+
+        document.getElementById('upload-capa').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('project-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // PREVIEW DE MÚLTIPLAS IMAGENS (GALERIA)
+        document.getElementById('upload-galeria').addEventListener('change', function (event) {
+            const container = document.getElementById('preview-novas-fotos');
+            container.innerHTML = '';
+
+            const files = event.target.files;
+
+            if (files.length > 0) {
+                const label = document.createElement('p');
+                label.textContent = "Novas imagens selecionadas (Salve para confirmar):";
+                label.style.color = "#4ade80";
+                label.style.fontSize = "0.85rem";
+                label.style.width = "100%";
+                label.style.marginBottom = "5px";
+
+                const headerDiv = document.createElement('div');
+                headerDiv.style.width = "100%";
+                headerDiv.appendChild(label);
+            }
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const div = document.createElement('div');
+                    div.style.minWidth = "100px";
+                    div.style.height = "70px";
+                    div.style.borderRadius = "8px";
+                    div.style.overflow = "hidden";
+                    div.style.border = "2px solid #4ade80";
+                    div.style.position = "relative";
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+
+                    div.appendChild(img);
+                    container.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // ==============================================================
+        // 3. SCRIPT DO AUTOCOMPLETE DE EQUIPE
+        // ==============================================================
+        const searchInput = document.getElementById('search_user');
+        const resultsBox = document.getElementById('search_results');
+        const hiddenIdInput = document.getElementById('selected_user_id');
+
+        if (searchInput) { // Só roda se o elemento existir
+            searchInput.addEventListener('input', function () {
+                const query = this.value;
+                if (query.length < 2) {
+                    resultsBox.style.display = 'none';
+                    return;
+                }
+
+                // Chama a API que criamos no backend
+                fetch(`/api/pesquisar-devs?q=${query}`)
+                    .then(response => response.json())
+                    .then(users => {
+                        resultsBox.innerHTML = '';
+                        if (users && users.length > 0) {
+                            resultsBox.style.display = 'block';
+                            users.forEach(user => {
+                                const div = document.createElement('div');
+                                div.style.padding = '12px';
+                                div.style.cursor = 'pointer';
+                                div.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                                div.style.color = 'white';
+                                div.style.display = 'flex';
+                                div.style.alignItems = 'center';
+                                div.style.gap = '10px';
+                                div.style.transition = 'background 0.2s';
+
+                                // Avatar se tiver
+                                let avatarUrl = user.FotoPerfil || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.NomeCompleto}`;
+
+                                div.innerHTML = `
+                                    <img src="${avatarUrl}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.9rem;">${user.NomeCompleto}</div>
+                                        <div style="font-size: 0.75rem; color: #aaa;">${user.TituloProfissional || 'Desenvolvedor'}</div>
+                                    </div>
+                                `;
+
+                                // Ao clicar no usuário
+                                div.addEventListener('click', () => {
+                                    searchInput.value = user.NomeCompleto; // Mostra o nome
+                                    hiddenIdInput.value = user.Id; // Salva o ID oculto
+                                    resultsBox.style.display = 'none'; // Esconde lista
+                                });
+
+                                // Hover visual
+                                div.onmouseover = () => div.style.background = 'rgba(0, 255, 209, 0.1)';
+                                div.onmouseout = () => div.style.background = 'transparent';
+
+                                resultsBox.appendChild(div);
+                            });
+                        } else {
+                            resultsBox.style.display = 'none';
+                        }
+                    })
+                    .catch(err => console.error("Erro no autocomplete:", err));
+            });
+
+            // Fecha a lista se clicar fora
+            document.addEventListener('click', function (e) {
+                if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                    resultsBox.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
+{{ end }}

@@ -1,0 +1,840 @@
+{{ define "ChatFull" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Chat - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* --- ESTILOS GERAIS (MANTIDOS) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: #18181b;
+            border: 1px solid #27272a;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--brand-teal);
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .modal-btn {
+            background: var(--brand-teal);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- LAYOUT --- */
+        .chat-layout {
+            display: flex;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            background: transparent !important;
+        }
+
+        .chat-sidebar {
+            width: 350px;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            background: rgba(9, 9, 11, 0.7);
+            backdrop-filter: blur(15px);
+            height: 100%;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            background: rgba(9, 9, 11, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chat-input-area {
+            flex-shrink: 0;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            z-index: 20;
+            padding-bottom: env(safe-area-inset-bottom, 15px);
+        }
+
+        /* --- UTILITÁRIO --- */
+        .d-none {
+            display: none !important;
+        }
+
+        /* --- INDICADORES --- */
+        .contact-avatar {
+            border: 2px solid transparent;
+            padding: 2px;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+        }
+
+        .header-avatar-img {
+            border: 2px solid transparent;
+            padding: 2px;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .border-dev {
+            border-color: var(--brand-teal) !important;
+        }
+
+        .border-empresa {
+            border-color: var(--brand-orange) !important;
+        }
+
+        .border-admin {
+            border-color: #a855f7 !important;
+        }
+
+        /* --- HEADER --- */
+        .header-profile-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .header-user-name {
+            margin: 0;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-user-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 4px;
+            width: fit-content;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .badge-teal {
+            color: var(--brand-teal);
+            border: 1px solid rgba(0, 255, 209, 0.3);
+            background: rgba(0, 255, 209, 0.05);
+        }
+
+        .badge-orange {
+            color: var(--brand-orange);
+            border: 1px solid rgba(255, 153, 0, 0.3);
+            background: rgba(255, 153, 0, 0.05);
+        }
+
+        .badge-purple {
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        /* --- TOASTS INTERNOS --- */
+        #notification-area {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast-card {
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid transparent;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 280px;
+            max-width: 350px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            transition: transform 0.2s;
+        }
+
+        /* CORES DA BORDA DA NOTIFICAÇÃO */
+        .toast-border-dev {
+            border-left-color: var(--brand-teal) !important;
+        }
+
+        .toast-border-empresa {
+            border-left-color: var(--brand-orange) !important;
+        }
+
+        .toast-border-admin {
+            border-left-color: #a855f7 !important;
+        }
+
+        .toast-card:hover {
+            transform: translateX(-5px);
+        }
+
+        .toast-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .toast-content h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .toast-content p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #a1a1aa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chat-layout .chat-sidebar {
+                width: 100%;
+                display: flex;
+                background: rgba(9, 9, 11, 0.6);
+            }
+
+            .chat-layout .chat-window {
+                display: none;
+            }
+
+            .chat-layout.mobile-chat-active .chat-sidebar {
+                display: none;
+            }
+
+            .chat-layout.mobile-chat-active .chat-window {
+                display: flex;
+                width: 100%;
+                height: 100dvh;
+            }
+
+            .chat-input-area {
+                position: sticky;
+                bottom: 0;
+                background: rgba(9, 9, 11, 0.95);
+            }
+
+            .header-user-name {
+                font-size: 1rem;
+                max-width: 180px;
+            }
+
+            #notification-area {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                align-items: center;
+            }
+
+            .toast-card {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #09090b; overflow: hidden;">
+
+    <div id="notification-area"></div>
+
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-box">
+            <i class="ph ph-info modal-icon"></i>
+            <h3 class="modal-title">Iniciar Nova Conversa</h3>
+            <p id="modal-desc" class="modal-text">Carregando instrução...</p>
+            <button onclick="fecharModal()" class="modal-btn">Entendi</button>
+        </div>
+    </div>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <div class="chat-layout {{ if .ChatAberto }}mobile-chat-active{{ end }}">
+
+        <div class="chat-sidebar">
+            <div class="chat-header-left">
+                {{ $linkVoltar := "/" }}
+                {{ if eq .UsuarioLogado.TipoUsuario "DEV" }} {{ $linkVoltar = "/dev/dashboard" }}
+                {{ else if eq .UsuarioLogado.TipoUsuario "EMPRESA" }} {{ $linkVoltar = "/empresa/dashboard" }}
+                {{ else if eq .UsuarioLogado.TipoUsuario "ADMIN" }} {{ $linkVoltar = "/admin/dashboard" }}
+                {{ end }}
+
+                <button onclick="window.location.href='{{ $linkVoltar }}'"
+                    style="background: none; border: none; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; transition: background 0.2s;"
+                    title="Voltar ao Dashboard">
+                    <i class="ph ph-arrow-left" style="font-size: 1.2rem;"></i>
+                </button>
+
+                <h2
+                    style="font-size: 1.2rem; font-weight: 700; color: white; letter-spacing: 0.5px; margin-right: auto; margin-left: 10px;">
+                    Mensagens</h2>
+
+                <button id="btn-novo-chat"
+                    style="background: var(--brand-teal); border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0,255,209,0.3);">
+                    <i class="ph ph-plus" style="font-size: 1.2rem; color: black; font-weight: bold;"></i>
+                </button>
+            </div>
+
+            <div style="padding: 15px;">
+                <div
+                    style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+                    <i class="ph ph-magnifying-glass" style="color: var(--text-gray);"></i>
+                    <input type="text" placeholder="Buscar conversa..."
+                        style="background: transparent; border: none; color: white; outline: none; width: 100%; font-size: 0.9rem;">
+                </div>
+            </div>
+
+            <div class="contact-list" style="flex: 1; overflow-y: auto;">
+
+                {{ if gt (len .Grupos) 0 }}
+                <div
+                    style="padding: 10px 15px; color: var(--text-gray); font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+                    Meus Projetos
+                </div>
+                {{ range .Grupos }}
+                <a href="/chat?projeto={{ .ProjetoId }}" style="text-decoration: none;"
+                    id="group-link-{{ .ProjetoId }}">
+                    <div class="contact-item {{ if and $.IsGrupo (eq $.ProjetoAtual.Id .ProjetoId) }}active{{ end }}">
+
+                        {{ if .CapaProjeto }}
+                        <img src="{{ .CapaProjeto }}"
+                            style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px; border: 2px solid var(--brand-teal);">
+                        {{ else }}
+                        <div
+                            style="width: 45px; height: 45px; border-radius: 8px; background: rgba(0, 255, 209, 0.1); border: 2px solid var(--brand-teal); display: flex; align-items: center; justify-content: center; color: var(--brand-teal);">
+                            <i class="ph ph-rocket-launch" style="font-size: 1.5rem;"></i>
+                        </div>
+                        {{ end }}
+
+                        <div class="contact-info" style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>{{ .NomeProjeto }}</h4>
+                                <span class="badge-count {{ if eq .NaoLidas 0 }}d-none{{ end }}"
+                                    id="badge-grupo-{{ .ProjetoId }}">{{ .NaoLidas }}</span>
+                            </div>
+                            <p class="msg-preview-read" id="preview-grupo-{{ .ProjetoId }}">{{ .UltimaMensagem }}</p>
+                        </div>
+                    </div>
+                </a>
+                {{ end }}
+                {{ end }}
+
+                <div
+                    style="padding: 10px 15px; color: var(--text-gray); font-size: 0.75rem; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; margin-top: 10px;">
+                    Mensagens Diretas
+                </div>
+                {{ range .Contatos }}
+                <a href="/chat?id={{ .UsuarioId }}" style="text-decoration: none;" id="contact-link-{{ .UsuarioId }}">
+                    <div class="contact-item {{ if and (not $.IsGrupo) .Ativo }}active{{ end }}">
+
+                        {{ $borderClass := "" }}
+                        {{ if eq .TipoUsuario "DEV" }} {{ $borderClass = "border-dev" }}
+                        {{ else if eq .TipoUsuario "EMPRESA" }} {{ $borderClass = "border-empresa" }}
+                        {{ else if eq .TipoUsuario "ADMIN" }} {{ $borderClass = "border-admin" }}
+                        {{ end }}
+
+                        {{ if .Avatar }}
+                        <img src="{{ .Avatar }}" class="contact-avatar {{ $borderClass }}">
+                        {{ else }}
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .Nome }}"
+                            class="contact-avatar {{ $borderClass }}">
+                        {{ end }}
+
+                        <div class="contact-info" style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 class="{{ if gt .NaoLidas 0 }}name-unread{{ end }}">{{ .Nome }}</h4>
+                                <span class="badge-count {{ if eq .NaoLidas 0 }}d-none{{ end }}"
+                                    id="badge-{{ .UsuarioId }}">{{ .NaoLidas }}</span>
+                            </div>
+                            <p class="{{ if gt .NaoLidas 0 }}msg-preview-unread{{ else }}msg-preview-read{{ end }}"
+                                id="preview-{{ .UsuarioId }}">{{ .UltimaMensagem }}</p>
+                        </div>
+                    </div>
+                </a>
+                {{ end }}
+
+            </div>
+        </div>
+
+        <div class="chat-window">
+
+            {{ if .ChatAberto }}
+            <div class="chat-header-right">
+                <a href="/chat" class="btn-back-chat">
+                    <i class="ph ph-arrow-left" style="font-size: 1.5rem;"></i>
+                </a>
+
+                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+
+                    {{ if .IsGrupo }}
+                    {{ if .ProjetoAtual.ImagemCapa }}
+                    <img src="{{ .ProjetoAtual.ImagemCapa }}" class="header-avatar-img border-dev">
+                    {{ else }}
+                    <div class="header-avatar-img border-dev"
+                        style="background: rgba(0, 255, 209, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-teal);">
+                        <i class="ph ph-rocket-launch" style="font-size: 1.2rem;"></i>
+                    </div>
+                    {{ end }}
+
+                    <div class="header-profile-info">
+                        <h4 class="header-user-name" id="header-username" data-full-name="{{ .ProjetoAtual.Titulo }}">
+                            {{ .ProjetoAtual.Titulo }}
+                        </h4>
+                        <span class="header-user-badge badge-teal">Chat do Projeto</span>
+                    </div>
+                    {{ else }}
+                    {{ $headerBorder := "" }}
+                    {{ if eq .Destinatario.TipoUsuario "DEV" }} {{ $headerBorder = "border-dev" }}
+                    {{ else if eq .Destinatario.TipoUsuario "EMPRESA" }} {{ $headerBorder = "border-empresa" }}
+                    {{ else if eq .Destinatario.TipoUsuario "ADMIN" }} {{ $headerBorder = "border-admin" }}
+                    {{ end }}
+
+                    {{ if .Destinatario.FotoPerfil }}
+                    <img src="{{ .Destinatario.FotoPerfil }}" class="header-avatar-img {{ $headerBorder }}">
+                    {{ else }}
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .Destinatario.NomeCompleto }}"
+                        class="header-avatar-img {{ $headerBorder }}">
+                    {{ end }}
+
+                    <div class="header-profile-info">
+                        <h4 class="header-user-name" id="header-username"
+                            data-full-name="{{ .Destinatario.NomeCompleto }}">
+                            {{ .Destinatario.NomeCompleto }}
+                        </h4>
+                        {{ if eq .Destinatario.TipoUsuario "ADMIN" }}
+                        <span class="header-user-badge badge-purple">Admin</span>
+                        {{ else if eq .Destinatario.TipoUsuario "EMPRESA" }}
+                        <span class="header-user-badge badge-orange">
+                            {{ if .Destinatario.NomeFantasia }}{{ .Destinatario.NomeFantasia }}{{ else }}Empresa{{ end
+                            }}
+                        </span>
+                        {{ else }}
+                        <span class="header-user-badge badge-teal">
+                            {{ if .Destinatario.TituloProfissional }}{{ .Destinatario.TituloProfissional }}{{ else
+                            }}Desenvolvedor{{ end }}
+                        </span>
+                        {{ end }}
+                    </div>
+                    {{ end }}
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-left: auto;">
+                    {{ if .IsGrupo }}
+                    <a href="/projeto/detalhes?id={{ .ProjetoAtual.Id }}" class="btn btn-ghost"
+                        style="padding: 8px; color: var(--text-gray); display: flex; align-items: center; justify-content: center; text-decoration: none;"
+                        title="Ver Projeto">
+                        <i class="ph ph-kanban" style="font-size: 1.3rem;"></i>
+                    </a>
+                    {{ else }}
+                    {{ if ne .Destinatario.TipoUsuario "ADMIN" }}
+                    {{ $linkPerfil := "/talento/detalhes" }}
+                    {{ if eq .Destinatario.TipoUsuario "EMPRESA" }}{{ $linkPerfil = "/empresa/detalhes" }}{{ end }}
+                    <a href="{{ $linkPerfil }}?id={{ .Destinatario.Id }}" class="btn btn-ghost"
+                        style="padding: 8px; color: var(--text-gray); display: flex; align-items: center; justify-content: center; text-decoration: none;"
+                        title="Ver Perfil">
+                        {{ if eq .Destinatario.TipoUsuario "EMPRESA" }}<i class="ph ph-buildings"
+                            style="font-size: 1.3rem;"></i>{{ else }}<i class="ph ph-user"
+                            style="font-size: 1.3rem;"></i>{{ end }}
+                    </a>
+                    {{ end }}
+                    {{ end }}
+                </div>
+            </div>
+
+            <div class="messages-area" id="msg-container">
+                {{ range .ConversaAtual }}
+                {{ if .EhMinha }}
+                <div class="message-bubble msg-me" title="{{ .HoraFormatada }}">{{ .Conteudo }}</div>
+                {{ else }}
+                {{ if $.IsGrupo }}
+                <div style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 18px;">
+                    <div style="flex-shrink: 0;">
+                        {{ if .FotoRemetente }}
+                        <img src="{{ .FotoRemetente }}"
+                            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;"
+                            title="{{ .NomeRemetente }}">
+                        {{ else }}
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeRemetente }}"
+                            style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05);"
+                            title="{{ .NomeRemetente }}">
+                        {{ end }}
+                    </div>
+
+                    <div style="flex: 1; min-width: 0;">
+                        <span
+                            style="font-size: 0.75rem; color: var(--text-gray); margin-bottom: 4px; padding-left: 2px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{
+                            .NomeRemetente }}</span>
+
+                        <div class="message-bubble msg-them"
+                            style="margin: 0; display: inline-block; max-width: 100%; word-break: break-word;"
+                            title="{{ .HoraFormatada }}">{{ .Conteudo }}</div>
+                    </div>
+                </div>
+                {{ else }}
+                <div class="message-bubble msg-them" title="{{ .HoraFormatada }}">{{ .Conteudo }}</div>
+                {{ end }}
+                {{ end }}
+                {{ else }}
+                <div style="text-align: center; color: var(--text-gray); margin-top: auto; margin-bottom: auto;">
+                    <i class="ph ph-chat-teardrop-text" style="font-size: 3rem; opacity: 0.5;"></i>
+                    <p>Inicie a conversa!</p>
+                </div>
+                {{ end }}
+            </div>
+
+            {{ if .DestinatarioBanido }}
+            <div class="chat-input-area"
+                style="justify-content: center; background: rgba(239, 68, 68, 0.2); border-top: 1px solid #ef4444;">
+                <div style="display: flex; align-items: center; gap: 10px; color: #ef4444; padding: 10px;">
+                    <i class="ph-fill ph-warning-circle" style="font-size: 1.5rem;"></i><span
+                        style="font-weight: 600;">A conta deste usuário está suspensa.</span>
+                </div>
+            </div>
+            {{ else }}
+            <div class="chat-input-area">
+                <form id="form-chat" style="width: 100%;">
+
+                    {{ if .IsGrupo }}
+                    <input type="hidden" name="projeto_id" value="{{ .ProjetoAtual.Id }}">
+                    {{ else }}
+                    <input type="hidden" name="destinatario_id" value="{{ .Destinatario.Id }}">
+                    {{ end }}
+
+                    <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" name="conteudo" id="input-msg" class="chat-input"
+                            placeholder="Digite sua mensagem..." autocomplete="off"
+                            style="flex: 1; background: rgba(34, 34, 34, 0.8); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px;">
+                        <button type="submit"
+                            style="background: var(--brand-teal); border: none; width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; flex-shrink: 0;">
+                            <i class="ph ph-paper-plane-right"
+                                style="font-size: 1.2rem; color: black; font-weight: bold;"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {{ end }}
+
+            {{ else }}
+            <div
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-gray);">
+                <i class="ph ph-chats-circle"
+                    style="font-size: 5rem; color: var(--brand-teal); opacity: 0.5; margin-bottom: 20px;"></i>
+                <h2>Selecione uma conversa</h2>
+                <p>Escolha um contato ou projeto ao lado para começar a falar.</p>
+            </div>
+            {{ end }}
+
+        </div>
+    </div>
+
+    <script>
+        const usuarioLogadoId = parseInt("{{ .UsuarioLogado.Id }}") || 0;
+        const tipoUsuario = "{{ .UsuarioLogado.TipoUsuario }}";
+        const isGrupo = "{{ .IsGrupo }}" === "true";
+
+        // A MÁGICA AQUI: O Go vai resolver esse IF inteiro antes da página carregar,
+        // e o VS Code vai achar que é apenas uma string normal! Zero erros vermelhos.
+        const chatAtualId = parseInt("{{ if .IsGrupo }}{{ .ProjetoAtual.Id }}{{ else if .ChatAberto }}{{ .Destinatario.Id }}{{ else }}0{{ end }}") || 0;
+
+        const msgContainer = document.getElementById('msg-container');
+
+        // FORMATAÇÃO DO NOME
+        document.addEventListener("DOMContentLoaded", function () {
+            const headerNameEl = document.getElementById('header-username');
+            if (headerNameEl && !isGrupo) {
+                const fullName = headerNameEl.getAttribute('data-full-name');
+                if (fullName) {
+                    const parts = fullName.trim().split(/\s+/);
+                    if (parts.length > 2) headerNameEl.innerText = parts[0] + " " + parts[1];
+                }
+            }
+        });
+
+        // MODAL NOVO CHAT
+        const btnNovoChat = document.getElementById('btn-novo-chat');
+        const modal = document.getElementById('info-modal');
+        const modalDesc = document.getElementById('modal-desc');
+
+        if (btnNovoChat) {
+            btnNovoChat.addEventListener('click', () => {
+                modalDesc.innerHTML = tipoUsuario === "EMPRESA" ?
+                    "Acesse o <b>Painel da Empresa -> Talentos</b> para enviar mensagem." :
+                    "Explore o <b>Catálogo de Talentos</b> para iniciar um chat.";
+                modal.style.display = "flex";
+            });
+        }
+
+        function fecharModal() { document.getElementById('info-modal').style.display = "none"; }
+        window.onclick = function (event) { if (event.target == modal) modal.style.display = "none"; }
+
+        // --- WEBSOCKET E NOTIFICAÇÕES ---
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(protocol + "//" + window.location.host + "/ws");
+
+        socket.onopen = () => console.log("Conectado ao Chat!");
+
+        socket.onmessage = (event) => {
+            const dados = JSON.parse(event.data);
+
+            if (dados.tipo === "nova_mensagem") {
+                // Notificação de chat 1x1
+                if (!isGrupo && dados.remetente_id === chatAtualId) {
+                    adicionarBalao1x1(dados.conteudo, 'them', dados.hora);
+                } else if (dados.remetente_id !== usuarioLogadoId) {
+                    mostrarNotificacao(dados);
+                    atualizarSidebar(dados.remetente_id, dados.conteudo, false);
+                }
+            } else if (dados.tipo === "nova_mensagem_grupo") {
+                // Notificação de chat de Grupo
+                if (isGrupo && dados.projeto_id === chatAtualId && dados.remetente_id !== usuarioLogadoId) {
+                    adicionarBalaoGrupo(dados.conteudo, dados.hora, dados.remetente_nome, dados.remetente_foto);
+                } else if (dados.remetente_id !== usuarioLogadoId) {
+                    mostrarNotificacao(dados);
+                    atualizarSidebar(dados.projeto_id, dados.conteudo, true);
+                }
+            }
+        };
+
+        function adicionarBalao1x1(texto, tipo, hora) {
+            if (!msgContainer) return;
+            const div = document.createElement('div');
+            div.className = `message-bubble msg-${tipo}`;
+            div.title = hora;
+            div.innerText = texto;
+            msgContainer.appendChild(div);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        function adicionarBalaoGrupo(texto, hora, nome, fotoUrl) {
+            if (!msgContainer) return;
+            const container = document.createElement('div');
+
+            container.style.cssText = "display: flex; gap: 10px; align-items: flex-end; margin-bottom: 18px;";
+
+            const realFoto = fotoUrl ? fotoUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${nome}`;
+            const bgFoto = fotoUrl ? "" : "background: rgba(255,255,255,0.05);";
+
+            // Aplicada a mesma lógica de layout: flex: 1 no contêiner do texto e inline-block no balão
+            container.innerHTML = `
+                <div style="flex-shrink: 0;">
+                    <img src="${realFoto}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; ${bgFoto}" title="${nome}">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <span style="font-size: 0.75rem; color: var(--text-gray); margin-bottom: 4px; padding-left: 2px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nome}</span>
+                    <div class="message-bubble msg-them" style="margin: 0; display: inline-block; max-width: 100%; word-break: break-word;" title="${hora}">${texto}</div>
+                </div>
+            `;
+
+            msgContainer.appendChild(container);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        function mostrarNotificacao(dados) {
+            const audio = new Audio('/static/sounds/notification.mp3');
+            audio.play().catch(e => console.log("Áudio:", e));
+
+            const container = document.getElementById('notification-area');
+            const toast = document.createElement('div');
+            toast.className = 'toast-card toast-border-dev';
+
+            let avatarUrl = dados.remetente_foto ? dados.remetente_foto : `https://api.dicebear.com/7.x/avataaars/svg?seed=${dados.remetente_nome}`;
+
+            // Título diferente se for mensagem num projeto
+            let tituloToast = dados.tipo === "nova_mensagem_grupo" ? `[${dados.projeto_nome}] ${dados.remetente_nome}` : dados.remetente_nome;
+            let linkRedirect = dados.tipo === "nova_mensagem_grupo" ? `/chat?projeto=${dados.projeto_id}` : `/chat?id=${dados.remetente_id}`;
+
+            toast.innerHTML = `
+                <img src="${avatarUrl}" class="toast-avatar">
+                <div class="toast-content">
+                    <h4>${tituloToast}</h4>
+                    <p>${dados.conteudo}</p>
+                </div>
+            `;
+
+            toast.onclick = () => window.location.href = linkRedirect;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function atualizarSidebar(idAlvo, ultimaMsg, ehGrupo) {
+            const prefixo = ehGrupo ? "grupo" : idAlvo;
+            const previewEl = document.getElementById(`preview-${ehGrupo ? 'grupo-' + idAlvo : idAlvo}`);
+            if (previewEl) {
+                previewEl.innerText = ultimaMsg;
+                previewEl.classList.remove('msg-preview-read');
+                previewEl.classList.add('msg-preview-unread');
+            }
+
+            const badgeEl = document.getElementById(`badge-${ehGrupo ? 'grupo-' + idAlvo : idAlvo}`);
+            if (badgeEl) {
+                let count = parseInt(badgeEl.innerText) || 0;
+                count++;
+                badgeEl.innerText = count;
+                badgeEl.classList.remove('d-none');
+            }
+            document.title = `(Nova) Chat - NexHub`;
+        }
+
+        if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        const formChat = document.getElementById('form-chat');
+        if (formChat) {
+            formChat.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const input = document.getElementById('input-msg');
+                const texto = input.value;
+                if (!texto.trim()) return;
+
+                const formData = new FormData(formChat);
+                // A nossa própria mensagem aparece como balão verde normal
+                adicionarBalao1x1(texto, 'me', 'Agora');
+                input.value = '';
+                input.focus();
+
+                fetch('/chat/enviar', { method: 'POST', body: new URLSearchParams(formData) })
+                    .then(async response => {
+                        const ct = response.headers.get("content-type");
+                        if (ct && ct.indexOf("application/json") !== -1) return response.json();
+                        throw new Error(await response.text());
+                    })
+                    .then(data => { if (!data.sucesso) alert("Erro: " + data.erro); })
+                    .catch(err => alert("Erro crítico de conexão"));
+            });
+        }
+    </script>
+</body>
+
+</html>
+{{ end }}

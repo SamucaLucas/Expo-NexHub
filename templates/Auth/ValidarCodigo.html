@@ -1,0 +1,94 @@
+{{ define "ValidarCodigo" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Admin - NexHub</title>
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #09090b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .auth-card-responsive {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card-responsive {
+                padding: 25px;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <div class="auth-card auth-card-responsive">
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div
+                style="background: rgba(234, 179, 8, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; border: 1px solid rgba(234, 179, 8, 0.2);">
+                <i class="ph ph-shield-check" style="font-size: 2rem; color: #eab308;"></i>
+            </div>
+            <h2 style="color: white; margin-bottom: 10px;">Código de Verificação</h2>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">
+                Enviamos um código de 6 dígitos para <br>
+                <strong style="color: white;">{{ .Email }}</strong>
+            </p>
+        </div>
+
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('erro') === 'CodigoInvalido') {
+                document.write('<div style="background: rgba(239,68,68,0.2); color: #ef4444; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 15px; font-size: 0.9rem;">Código inválido ou expirado.</div>');
+            }
+        </script>
+
+        <form action="/recuperar/codigo" method="POST">
+            <input type="hidden" name="email" value="{{ .Email }}">
+
+            <div class="form-group">
+                <label class="form-label" style="text-align: center; display: block;">Digite o Código</label>
+                <input type="text" name="codigo" class="form-input" placeholder="000000" maxlength="6" required
+                    style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; font-weight: bold; width: 100%;">
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; justify-content: center; margin-top: 20px;">
+                Verificar
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/esqueci-senha" class="auth-link" style="font-size: 0.9rem;">Reenviar e-mail</a>
+        </div>
+    </div>
+
+</body>
+
+</html>
+{{ end }}

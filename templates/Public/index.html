@@ -1,0 +1,310 @@
+{{ define "Index" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>NexHub - O Ecossistema de Inovação de Canaã e Parauapebas</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/" style="color: white;">Início</a></li>
+                <li><a href="/projetos">Projetos</a></li>
+                <li><a href="/talentos">Talentos</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+            </ul>
+            <div class="nav-auth">
+                {{ if .Usuario.Id }}
+                <div class="user-menu-container" onclick="toggleDropdown()">
+                    <span style="color: white; font-size: 0.9rem; font-weight: 500; margin-right: 5px;">
+                        Olá, {{ .Usuario.PrimeiroNome }}
+                    </span> {{ if .Usuario.FotoPerfil }}
+                    <img src="{{ .Usuario.FotoPerfil }}" class="nav-avatar" alt="Perfil"> {{ else }}
+                    <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .Usuario.NomeCompleto }}"
+                        class="nav-avatar" alt="Perfil"> {{ end }}
+
+                    <i class="ph ph-caret-down" style="color: var(--text-gray); font-size: 0.8rem;"></i>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        
+                        {{ if eq .Usuario.TipoUsuario "DEV" }}
+                        <a href="/dev/dashboard" class="dropdown-item">
+                            <i class="ph ph-squares-four"></i> Dashboard
+                        </a>
+                        <a href="/dev/perfil" class="dropdown-item">
+                            <i class="ph ph-user"></i> Meu Perfil
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "EMPRESA" }}
+                        <a href="/empresa/dashboard" class="dropdown-item">
+                            <i class="ph ph-buildings"></i> Painel Empresa
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "ADMIN" }}
+                        <a href="/admin/dashboard" class="dropdown-item">
+                            <i class="ph ph-shield-check"></i> Admin
+                        </a>
+                        
+                        {{ end }}
+
+                        <a href="/logout" class="dropdown-item logout">
+                            <i class="ph ph-sign-out"></i> Sair
+                        </a>
+                    </div>
+                </div>
+
+                {{ else }}
+                <a href="/login" class="btn btn-ghost">Entrar</a>
+                <a href="/cadastro" class="btn btn-primary">Cadastrar</a> {{ end }}
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section" style="min-height: 90vh;">
+        <div class="container hero-content">
+
+            <span
+                style="color: var(--brand-teal); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding-top: 50px; font-size: 0.85rem; margin-bottom: 15px; display: block;">
+                Canaã dos Carajás & Parauapebas
+            </span>
+
+            <h1 class="hero-title">
+                Tire suas ideias do papel.<br>
+                <span class="gradient-text">Encontre sua equipe.</span>
+            </h1>
+
+            <p style="color: var(--text-gray); font-size: 1.2rem; max-width: 650px; margin-bottom: 40px;">
+                O NexHub é a plataforma centralizada que conecta desenvolvedores locais a empresas e parceiros. Chega de
+                projetos invisíveis. Mostre o que você sabe fazer.
+            </p>
+
+            <div style="display: flex; gap: 20px;">
+                <a href="/cadastro" class="btn btn-primary"
+                    style="padding: 16px 40px; font-size: 1.1rem; box-shadow: 0 0 20px rgba(255, 153, 0, 0.3);">
+                    Começar Agora
+                </a>
+                <a href="/projetos" class="btn btn-ghost" style="border: 1px solid rgba(255,255,255,0.2);">
+                    Ver Vitrine
+                </a>
+            </div>
+
+            <div style="margin-top: 60px; display: flex; gap: 40px; opacity: 0.8;">
+                <div style="text-align: center;">
+                    <h3 style="font-size: 2.5rem; color: white;">100%</h3>
+                    <span style="font-size: 1rem; color: var(--text-gray);">Foco Regional</span>
+                </div>
+                <div style="text-align: center;">
+                    <h3 style="font-size: 2.5rem; color: white;">Grátis</h3>
+                    <span style="font-size: 1rem; color: var(--text-gray);">Para Devs</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="landing-section" style="padding-top: 50px;">
+        <div class="container">
+            <h2 class="section-title">Um Hub Completo</h2>
+            <p class="section-subtitle">Tudo o que você precisa para alavancar sua carreira ou encontrar soluções
+                tecnológicas.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="ph ph-rocket-launch feature-icon"></i>
+                    <h3 style="color: white; margin-bottom: 10px;">Vitrine de Projetos</h3>
+                    <p style="color: var(--text-gray);">
+                        Cadastre seus softwares, TCCs e protótipos. Receba feedback, avaliações e ganhe visibilidade
+                        para recrutadores.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-users-three feature-icon" style="color: var(--brand-orange);"></i>
+                    <h3 style="color: white; margin-bottom: 10px;">Formação de Equipes</h3>
+                    <p style="color: var(--text-gray);">
+                        Tem uma ideia mas não sabe programar tudo? Encontre parceiros (Backend, Frontend, Design) e
+                        monte seu time dos sonhos.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-chat-circle-dots feature-icon"></i>
+                    <h3 style="color: white; margin-bottom: 10px;">Conexão Direta</h3>
+                    <p style="color: var(--text-gray);">
+                        Sem intermediários. Empresas e devs podem conversar em tempo real através do nosso chat
+                        integrado para fechar negócios.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="landing-section" style="padding-top: 20px;">
+        <div class="container">
+            <h2 class="section-title">Escolha seu Perfil</h2>
+            <p class="section-subtitle">O NexHub foi desenhado para atender dois públicos essenciais da nossa região.
+            </p>
+
+            <div class="persona-grid">
+
+                <div class="persona-box persona-dev">
+                    <div
+                        style="position: absolute; top: 0; right: 0; padding: 5px 15px; background: var(--brand-orange); color: black; font-weight: bold; border-bottom-left-radius: 10px;">
+                        Para Criadores
+                    </div>
+                    <h3 style="font-size: 2rem; color: white; margin-bottom: 10px;">Desenvolvedor</h3>
+                    <p style="color: var(--text-gray);">Estudantes, Freelancers e Profissionais de TI.</p>
+
+                    <ul class="check-list">
+                        <li><i class="ph ph-check-circle"></i> Crie um portfólio online profissional.</li>
+                        <li><i class="ph ph-check-circle"></i> Encontre sócios para seus projetos.</li>
+                        <li><i class="ph ph-check-circle"></i> Seja encontrado por empresas locais.</li>
+                        <li><i class="ph ph-check-circle"></i> Participe da comunidade tech.</li>
+                    </ul>
+                    <a href="/cadastro" class="btn btn-primary"
+                        style="margin-top: 30px; width: 100%; text-align: center;">Sou Desenvolvedor</a>
+                </div>
+
+                <div class="persona-box persona-company">
+                    <div
+                        style="position: absolute; top: 0; right: 0; padding: 5px 15px; background: var(--brand-teal); color: black; font-weight: bold; border-bottom-left-radius: 10px;">
+                        Para Negócios
+                    </div>
+                    <h3 style="font-size: 2rem; color: white; margin-bottom: 10px;">Empresa</h3>
+                    <p style="color: var(--text-gray);">Comércios, Indústrias e Startups.</p>
+
+                    <ul class="check-list">
+                        <li><i class="ph ph-check-circle"></i> Encontre talentos locais qualificados.</li>
+                        <li><i class="ph ph-check-circle"></i> Visualize soluções prontas para uso.</li>
+                        <li><i class="ph ph-check-circle"></i> Contrate serviços sem burocracia.</li>
+                        <li><i class="ph ph-check-circle"></i> Fomente a economia da região.</li>
+                    </ul>
+                    <a href="/cadastro" class="btn btn-ghost"
+                        style="margin-top: 30px; width: 100%; text-align: center; border: 1px solid var(--brand-teal); color: var(--brand-teal);">Sou
+                        Empresa</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section" style="padding: 20px;">
+        <div class="container">
+            <div class="region-banner">
+                <i class="ph ph-map-pin" style="font-size: 2.5rem; color: var(--brand-teal); margin-bottom: 15px;"></i>
+                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 10px; color: white;">Orgulhosamente Local
+                </h2>
+                <p style="color: #e4e4e7; font-size: 1.1rem; max-width: 700px; margin: 0 auto;">
+                    Desenvolvido pensando na realidade tecnológica de <strong>Canaã dos Carajás e Parauapebas</strong>.
+                    Nosso objetivo é fortalecer o polo tecnológico no coração do Pará.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-section" style="padding-top: 50px;">
+        <div class="container">
+            <h2 class="section-title">Como começar?</h2>
+
+            <div class="steps-container" style="margin-top: 60px;">
+                <div class="step-item">
+                    <span class="step-number">1</span>
+                    <h3 style="color: white; margin-bottom: 10px;">Crie sua Conta</h3>
+                    <p style="color: var(--text-gray);">Cadastro rápido. Defina se você é Dev ou Empresa e personalize
+                        seu perfil.</p>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">2</span>
+                    <h3 style="color: white; margin-bottom: 10px;">Poste ou Busque</h3>
+                    <p style="color: var(--text-gray);">Cadastre seu projeto na vitrine ou use os filtros para achar
+                        talentos.</p>
+                </div>
+                <div class="step-item">
+                    <span class="step-number">3</span>
+                    <h3 style="color: white; margin-bottom: 10px;">Conecte-se</h3>
+                    <p style="color: var(--text-gray);">Gostou do que viu? Mande uma mensagem e inicie a parceria.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer style="background: #09090b; padding: 50px 0; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px;">
+
+            <div style="max-width: 300px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <img src="/static/img/logo1.png" style="height: 80px; border-radius: 4px;">
+
+                </div>
+                <p style="color: var(--text-gray); font-size: 0.9rem;">
+                    Conectando inovação e oportunidades no sudeste do Pará.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="color: white; margin-bottom: 15px;">Navegação</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 8px;"><a href="/projetos"
+                            style="color: var(--text-gray); text-decoration: none;">Projetos</a></li>
+                    <li style="margin-bottom: 8px;"><a href="/talentos"
+                            style="color: var(--text-gray); text-decoration: none;">Talentos</a></li>
+                    <li style="margin-bottom: 8px;"><a href="/login"
+                            style="color: var(--text-gray); text-decoration: none;">Login</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 style="color: white; margin-bottom: 15px;">Legal</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 8px;"><a href="#"
+                            style="color: var(--text-gray); text-decoration: none;">Termos de Uso</a></li>
+                    <li style="margin-bottom: 8px;"><a href="#"
+                            style="color: var(--text-gray); text-decoration: none;">Privacidade</a></li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="container"
+            style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-gray); font-size: 0.8rem;">
+            &copy; 2026 NexHub. Desenvolvido por Samuel Lucas.
+        </div>
+    </footer>
+
+    <script src="static/js/script.js"></script>
+
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

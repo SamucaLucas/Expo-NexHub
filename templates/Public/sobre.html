@@ -1,0 +1,218 @@
+{{ define "Sobre" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Sobre o Criador - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* --- ESTILOS ESPECÍFICOS PARA A PÁGINA SOBRE --- */
+
+        /* Container principal flexível */
+        .about-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Wrapper da imagem */
+        .about-image-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            max-width: 400px;
+            /* Limite de tamanho no desktop */
+        }
+
+        /* A foto em si */
+        .profile-photo {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            /* Mantém quadrada */
+            object-fit: cover;
+            border-radius: 20px;
+            border: 2px solid var(--brand-teal);
+            box-shadow: 0 0 30px rgba(0, 255, 209, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-photo:hover {
+            transform: scale(1.02);
+        }
+
+        /* Área de texto */
+        .about-content {
+            flex: 1.2;
+            color: white;
+        }
+
+        /* --- RESPONSIVIDADE (MOBILE E TABLET) --- */
+        @media (max-width: 960px) {
+            .about-container {
+                flex-direction: column;
+                /* Empilha um embaixo do outro */
+                text-align: center;
+                /* Centraliza o texto */
+                gap: 30px;
+            }
+
+            .about-image-wrapper {
+                width: 100%;
+                max-width: 280px;
+                /* Foto menor no mobile */
+                margin: 0 auto;
+            }
+
+            .about-content h1 {
+                font-size: 2.2rem !important;
+                /* Título menor */
+            }
+
+            /* Ajuste da grid de redes sociais para centralizar no mobile */
+            .social-grid {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Início</a></li>
+                <li><a href="/projetos">Projetos</a></li>
+                <li><a href="/talentos">Talentos</a></li>
+                <li><a href="/sobre" style="color: white;">Sobre</a></li>
+            </ul>
+            <div class="nav-auth">
+                {{ if .Usuario.Id }}
+                <div class="user-menu-container" onclick="toggleDropdown()">
+                    <span style="color: white; font-size: 0.9rem; font-weight: 500; margin-right: 5px;">
+                        Olá, {{ .Usuario.PrimeiroNome }}
+                    </span> {{ if .Usuario.FotoPerfil }}
+                    <img src="{{ .Usuario.FotoPerfil }}" class="nav-avatar" alt="Perfil"> {{ else }}
+                    <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .Usuario.NomeCompleto }}"
+                        class="nav-avatar" alt="Perfil"> {{ end }}
+
+                    <i class="ph ph-caret-down" style="color: var(--text-gray); font-size: 0.8rem;"></i>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        {{ if eq .Usuario.TipoUsuario "DEV" }}
+                        <a href="/dev/dashboard" class="dropdown-item">
+                            <i class="ph ph-squares-four"></i> Dashboard
+                        </a>
+                        <a href="/dev/perfil" class="dropdown-item">
+                            <i class="ph ph-user"></i> Meu Perfil
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "EMPRESA" }}
+                        <a href="/empresa/dashboard" class="dropdown-item">
+                            <i class="ph ph-buildings"></i> Painel Empresa
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "ADMIN" }}
+                        <a href="/admin/dashboard" class="dropdown-item">
+                            <i class="ph ph-shield-check"></i> Admin
+                        </a>
+                        {{ end }}
+
+                        <a href="/logout" class="dropdown-item logout">
+                            <i class="ph ph-sign-out"></i> Sair
+                        </a>
+                    </div>
+                </div>
+
+                {{ else }}
+                <a href="/login" class="btn btn-ghost">Entrar</a>
+                <a href="/cadastro" class="btn btn-primary">Cadastrar</a> {{ end }}
+            </div>
+        </div>
+    </nav>
+
+    <section style="min-height: 100vh; display: flex; align-items: center; padding-top: 100px; padding-bottom: 40px;">
+        <div class="container">
+
+            <div class="about-container">
+
+                <div class="about-image-wrapper">
+                    <img src="static/img/Samuel/Samuel.jpeg" alt="Samuel Lucas" class="profile-photo">
+                </div>
+
+                <div class="about-content">
+                    <span
+                        style="color: var(--brand-teal); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 0.9rem;">O
+                        Desenvolvedor</span>
+                    <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 15px; line-height: 1.1;">Samuel Lucas
+                    </h1>
+
+                    <p style="color: var(--text-gray); font-size: 1.1rem; margin-bottom: 20px;">
+                        Desenvolvedor Fullstack apaixonado por resolver problemas reais através da tecnologia. Com
+                        experiência em <strong>Golang, PowerApps, Sharepoint, PowerBi, PowerAutomate e
+                            PostgreSQL</strong>, busco criar sistemas que impactam a
+                        comunidade local.
+                    </p>
+
+                    <div class="highlight-box">
+                        <h3 style="color: white; font-size: 1.3rem; margin-bottom: 10px;">💡 O Incentivo</h3>
+                        <p style="color: #d4d4d8; font-size: 1rem; line-height: 1.6;">
+                            A ideia do <strong>NexHub</strong> nasceu durante meu estágio, onde desenvolvi um sistema
+                            chamado <em>Gestão de Projetos Corredor Norte</em>, Sistema esse que seria uma central com
+                            todos os projetos da Empresa, onde poderia
+                            fazer validação entre niveis de usuarios diferentes.
+                            <br><br> Percebi que, assim como no meu trabalho, muitos talentos e projetos em Canaã e
+                            Parauapebas ficavam "invisíveis" por falta de uma vitrine centralizada. O NexHub é a
+                            resposta para conectar essa inovação técnica às empresas
+                            que precisam dela.
+                        </p>
+                    </div>
+
+                    <div>
+                        <p style="color: white; font-weight: 600; margin-bottom: 10px;">Vamos nos conectar:</p>
+                        <div class="social-grid" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="/chat?id=5" class="social-btn btn-chat-nexhub">
+                                <i class="ph-bold ph-chat-circle-text" style="font-size: 1.2rem;"></i> Falar no NexHub
+                            </a>
+                            <a href="https://github.com/SamucaLucas" target="_blank" class="social-btn">
+                                <i class="ph ph-github-logo" style="font-size: 1.2rem;"></i> GitHub
+                            </a>
+                            <a href="https://linkedin.com/in/samuel-lucas-da-conceição-setúbal-6ba7a4367/"
+                                target="_blank" class="social-btn">
+                                <i class="ph ph-linkedin-logo" style="font-size: 1.2rem;"></i> LinkedIn
+                            </a>
+                            <a href="https://instagram.com/samu_calucas" target="_blank" class="social-btn">
+                                <i class="ph ph-instagram-logo" style="font-size: 1.2rem;"></i> Instagram
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <script src="static/js/script.js"></script>
+{{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

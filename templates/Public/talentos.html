@@ -1,0 +1,290 @@
+{{ define "Talentos" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Talentos - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* --- ESTILOS RESPONSIVOS E VISUAIS --- */
+
+        /* 1. Formulário de Filtro (Vidro Escuro) */
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            /* MUDANÇA AQUI: Fundo preto semi-transparente */
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            /* Efeito vidro */
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            align-items: center;
+        }
+
+        /* 2. Grid Inteligente de Talentos */
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        /* 3. Card de Talento (Vidro Mais Escuro) */
+        .talent-card {
+            display: flex;
+            flex-direction: column;
+            /* MUDANÇA AQUI: Fundo preto mais denso para destaque */
+            background: rgba(15, 15, 20, 0.6);
+            backdrop-filter: blur(12px);
+            /* Efeito vidro mais forte */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            height: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            /* Sombra suave */
+        }
+
+        .talent-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-teal);
+            background: rgba(15, 15, 20, 0.8);
+            /* Escurece mais ao passar o mouse */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- MEDIA QUERY (CELULARES E TABLETS) --- */
+        @media (max-width: 768px) {
+
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 20px;
+            }
+
+            .filter-form>div {
+                width: 100% !important;
+                min-width: 0 !important;
+                flex: 1 1 auto !important;
+            }
+
+            .filter-form button {
+                width: 100% !important;
+                margin-top: 10px;
+                height: 48px !important;
+            }
+
+            section {
+                padding-top: 100px !important;
+                padding-bottom: 40px !important;
+            }
+
+            h1 {
+                font-size: 2rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Início</a></li>
+                <li><a href="/projetos">Projetos</a></li>
+                <li><a href="/talentos" style="color: white;">Talentos</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+            </ul>
+
+            <div class="nav-auth">
+                {{ if .Usuario.Id }}
+                <div class="user-menu-container" onclick="toggleDropdown()">
+                    <span style="color: white; font-size: 0.9rem; font-weight: 500; margin-right: 5px;">
+                        Olá, {{ .Usuario.PrimeiroNome }}
+                    </span>
+                    {{ if .Usuario.FotoPerfil }}
+                    <img src="{{ .Usuario.FotoPerfil }}" class="nav-avatar" alt="Perfil">
+                    {{ else }}
+                    <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .Usuario.NomeCompleto }}"
+                        class="nav-avatar" alt="Perfil">
+                    {{ end }}
+
+                    <i class="ph ph-caret-down" style="color: var(--text-gray); font-size: 0.8rem;"></i>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        {{ if eq .Usuario.TipoUsuario "DEV" }}
+                        <a href="/dev/dashboard" class="dropdown-item">
+                            <i class="ph ph-squares-four"></i> Dashboard
+                        </a>
+                        <a href="/dev/perfil" class="dropdown-item">
+                            <i class="ph ph-user"></i> Meu Perfil
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "EMPRESA" }}
+                        <a href="/empresa/dashboard" class="dropdown-item">
+                            <i class="ph ph-buildings"></i> Painel Empresa
+                        </a>
+                        {{ else if eq .Usuario.TipoUsuario "ADMIN" }}
+                        <a href="/admin/dashboard" class="dropdown-item">
+                            <i class="ph ph-shield-check"></i> Admin
+                        </a>
+                        {{ end }}
+
+                        <a href="/logout" class="dropdown-item logout">
+                            <i class="ph ph-sign-out"></i> Sair
+                        </a>
+                    </div>
+                </div>
+
+                {{ else }}
+                <a href="/login" class="btn btn-ghost">Entrar</a>
+                <a href="/cadastro" class="btn btn-primary">Cadastrar</a> {{ end }}
+            </div>
+        </div>
+    </nav>
+
+    <section style="padding-top: 120px; padding-bottom: 60px;">
+        <div class="container">
+
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 10px;">Encontre Parceiros</h1>
+                <p style="color: var(--text-gray); max-width: 600px; margin: 0 auto;">
+                    Conecte-se com desenvolvedores e especialistas locais.
+                </p>
+            </div>
+
+            <form action="/talentos" method="GET" class="filter-form">
+
+                <div style="flex: 2; position: relative; min-width: 250px;">
+                    <i class="ph ph-magnifying-glass"
+                        style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray);"></i>
+                    <input type="text" name="q" value="{{ .FiltroTermo }}" class="form-input"
+                        placeholder="Buscar por nome, cargo ou habilidade..."
+                        style="border-radius: 50px; padding-left: 40px; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                </div>
+
+                <div style="flex: 1; min-width: 150px;">
+                    <select name="nivel" class="form-input"
+                        style="border-radius: 50px; cursor: pointer; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                        <option value="" style="background-color: #18181b;">Todos Níveis</option>
+                        <option value="Junior" {{ if eq .FiltroNivel "Junior" }}selected{{ end }}
+                            style="background-color: #18181b;">Júnior</option>
+                        <option value="Pleno" {{ if eq .FiltroNivel "Pleno" }}selected{{ end }}
+                            style="background-color: #18181b;">Pleno</option>
+                        <option value="Senior" {{ if eq .FiltroNivel "Senior" }}selected{{ end }}
+                            style="background-color: #18181b;">Sênior</option>
+                        <option value="Especialista" {{ if eq .FiltroNivel "Especialista" }}selected{{ end }}
+                            style="background-color: #18181b;">Especialista</option>
+                    </select>
+                </div>
+
+                <div style="flex: 1; min-width: 200px;">
+                    <select name="disponivel" class="form-input"
+                        style="border-radius: 50px; cursor: pointer; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                        <option value="" style="background-color: #18181b;">Todos os Status</option>
+                        <option value="true" {{ if eq .FiltroDisponivel "true" }}selected{{ end }}
+                            style="background-color: #18181b;">Apenas Disponíveis</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary"
+                        style="border-radius: 50px; height: 100%; min-width: 100px;">
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+
+            <div class="talent-grid">
+
+                {{ if not .Dados }}
+                <div
+                    style="grid-column: 1/-1; text-align: center; padding: 60px; background: rgba(0,0,0,0.4); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <i class="ph ph-user-focus"
+                        style="font-size: 3rem; color: var(--text-gray); margin-bottom: 15px; display: block;"></i>
+                    <p style="color: var(--text-gray); margin-bottom: 10px;">Nenhum talento encontrado com esses
+                        filtros.</p>
+                    <a href="/talentos" style="color: var(--brand-teal); font-weight: 600;">Limpar busca</a>
+                </div>
+                {{ end }}
+
+                {{ range .Dados }}
+                <div class="talent-card">
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 15px;">
+
+                        {{ if .Nivel }}
+                        <span class="badge"
+                            style="background: rgba(255,255,255,0.08); color: #e4e4e7; border: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 500;">
+                            {{ .Nivel }}
+                        </span>
+                        {{ else }}
+                        <span></span> {{ end }}
+
+                        <div class="status-indicator" style="margin-bottom: 0;">
+                            {{ if .DisponivelParaEquipes }}
+                            <span class="status-dot"
+                                style="background-color: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                            <span style="color: #10b981; font-weight: 600; font-size: 0.8rem;">Disponível</span>
+                            {{ else }}
+                            <span class="status-dot" style="background-color: #ef4444;"></span>
+                            <span style="color: var(--text-gray); font-size: 0.8rem;">Indisponível</span>
+                            {{ end }}
+                        </div>
+                    </div>
+
+                    {{ if .FotoPerfil }}
+                    <img src="{{ .FotoPerfil }}" alt="User" class="talent-avatar" style="object-fit: cover;">
+                    {{ else }}
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeCompleto }}" alt="User"
+                        class="talent-avatar">
+                    {{ end }}
+
+                    <h3 class="talent-name">{{ .NomeCompleto }}</h3>
+                    <p class="talent-role">{{ if .TituloProfissional }}{{ .TituloProfissional }}{{ else
+                        }}Desenvolvedor{{ end }}</p>
+
+                    <div class="tech-stack">
+                        {{ range .SkillsComoLista }}
+                        <span class="tech-badge"
+                            style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);">{{ .
+                            }}</span>
+                        {{ else }}
+                        <span style="font-size: 0.8rem; color: #71717a; font-style: italic;">Sem skills
+                            cadastradas</span>
+                        {{ end }}
+                    </div>
+
+                    <a href="/talento/detalhes?id={{ .Id }}" class="btn btn-ghost"
+                        style="border: 1px solid rgba(255,255,255,0.2); width: 100%; margin-top: auto; color: white;">Ver
+                        Perfil</a>
+                </div>
+                {{ end }}
+
+            </div>
+    </section>
+
+    <script src="static/js/script.js"></script>
+{{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

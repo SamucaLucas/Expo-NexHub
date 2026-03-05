@@ -1,0 +1,174 @@
+{{ define "AdminProjetos" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Gerenciar Projetos - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Estilo para linha de projeto oculto */
+        .project-hidden-row {
+            opacity: 0.6;
+            background-color: rgba(239, 68, 68, 0.05);
+            border-left: 3px solid #ef4444;
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+    <div
+        style="position: fixed; top: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, #7c3aed, transparent 70%); opacity: 0.15; filter: blur(120px); z-index: 0; pointer-events: none;">
+    </div>
+    <div
+        style="position: fixed; bottom: -20%; left: -10%; width: 40vw; height: 40vw; background: radial-gradient(circle, #a78bfa, transparent 70%); opacity: 0.1; filter: blur(100px); z-index: 0; pointer-events: none;">
+    </div>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" style="border-right: 1px solid rgba(139, 92, 246, 0.2);">
+            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
+                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px; ">
+            </a>
+            <nav class="sidebar-menu">
+                <a href="/admin/dashboard" class="sidebar-item"><i class="ph ph-chart-line-up"></i></a>
+                <a href="/admin/usuarios" class="sidebar-item"><i class="ph ph-users"></i></a>
+                <a href="/admin/projetos" class="sidebar-item active"
+                    style="color: #a78bfa; border-color: #a78bfa; background: rgba(139, 92, 246, 0.1);">
+                    <i class="ph ph-briefcase"></i>
+                    <a href="/chat" class="sidebar-item" title="Mensagens">
+                        <i class="ph ph-chat-circle-dots"></i>
+                        {{ if gt .NaoLidas 0 }}
+                        <span class="badge-dot" style="margin-left: -5.5px; margin-bottom: 25px;"></span>
+                        {{ end }}
+                    </a>
+                    <a href="/admin/perfil" class="sidebar-item" title="Perfil"><i class="ph ph-gear"></i>
+                    </a>
+                </a>
+            </nav>
+            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;"><i
+                    class="ph ph-power"></i></a>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Gerenciar Projetos</h1>
+                    <p style="color: var(--text-gray);">Moderação de conteúdo e vitrine</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: right;">
+                        <span style="display: block; font-weight: 600; color: white;">{{ .Usuario.NomeCompleto
+                            }}</span>
+                        <span style="font-size: 0.8rem; color: #a78bfa;">Super Admin</span>
+                    </div>
+                    {{ if .Usuario.FotoPerfil }}
+                    <img src="{{ .Usuario.FotoPerfil }}"
+                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #a78bfa;">
+                    {{ else }}
+                    <div
+                        style="width: 45px; height: 45px; background: #a78bfa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black;">
+                        AD</div>
+                    {{ end }}
+                </div>
+            </div>
+
+            <form action="/admin/projetos" method="GET" class="admin-search-form"
+                style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" name="q" value="{{ .Busca }}" class="form-input" placeholder="Buscar projeto..."
+                    style="max-width: 300px;">
+
+                <select name="status" class="form-input" style="max-width: 200px;">
+                    <option value="">Todos os Status</option>
+                    <option value="Planejado" {{ if eq .Status "Planejado" }}selected{{ end }}>Planejado</option>
+                    <option value="Em Andamento" {{ if eq .Status "Em Andamento" }}selected{{ end }}>Em Andamento
+                    </option>
+                    <option value="Concluido" {{ if eq .Status "Concluido" }}selected{{ end }}>Concluído</option>
+                    <option value="Oculto" {{ if eq .Status "Oculto" }}selected{{ end }}>Oculto</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary"
+                    style="background: #a78bfa; border-color: #a78bfa;">Filtrar</button>
+            </form>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Projeto</th>
+                            <th>Dono (Dev)</th>
+                            <th>Categoria</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Projetos }}
+                        <tr class="{{ if eq .Status " Oculto" }}project-hidden-row{{ end }}">
+                            <td>#{{ .Id }}</td>
+                            <td style="font-weight: 600; color: white;">{{ .Titulo }}</td>
+                            <td>{{ .DonoNome }}</td>
+                            <td>{{ .Categoria }}</td>
+
+                            <td>
+                                {{ if eq .Status "Concluido" }}
+                                <span class="badge"
+                                    style="background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2);">Concluído</span>
+                                {{ else if eq .Status "Em Andamento" }}
+                                <span class="badge"
+                                    style="background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2);">Em
+                                    Andamento</span>
+                                {{ else if eq .Status "Oculto" }}
+                                <span style="color: #ef4444; font-weight: bold;">Oculto</span>
+                                {{ else }}
+                                <span class="badge">{{ .Status }}</span>
+                                {{ end }}
+                            </td>
+
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+
+                                    {{ if eq .Status "Oculto" }}
+                                    <a href="/admin/status-projeto?id={{ .Id }}&acao=aprovar" class="action-btn"
+                                        style="background: rgba(74, 222, 128, 0.2); color: #4ade80;"
+                                        title="Aprovar/Exibir">
+                                        <i class="ph ph-check"></i>
+                                    </a>
+                                    {{ else }}
+                                    <a href="/admin/status-projeto?id={{ .Id }}&acao=ocultar" class="action-btn"
+                                        style="background: rgba(250, 204, 21, 0.2); color: #facc15;"
+                                        title="Ocultar Projeto"
+                                        onclick="return confirm('Ocultar este projeto da vitrine?');">
+                                        <i class="ph ph-eye-slash"></i>
+                                    </a>
+                                    {{ end }}
+
+                                    <a href="/admin/excluir-projeto?id={{ .Id }}" class="action-btn btn-ban"
+                                        title="Excluir Permanentemente"
+                                        onclick="return confirm('TEM CERTEZA? Isso apagará o projeto permanentemente.');">
+                                        <i class="ph ph-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{ else }}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-gray);">Nenhum
+                                projeto encontrado.</td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

@@ -1,0 +1,254 @@
+{{ define "AdminUsuarios" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Gerenciar Usuários - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Botão Tornar Admin (Roxo) */
+        .btn-make-admin {
+            background: rgba(124, 58, 237, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-make-admin:hover {
+            background: rgba(124, 58, 237, 0.4);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Botão Remover Admin (Cinza) */
+        .btn-remove-admin {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-remove-admin:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Botão Banir (Vermelho) */
+        .btn-ban {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-ban:hover {
+            background: rgba(239, 68, 68, 0.4);
+            color: white;
+        }
+
+        /* Botão Desbanir (Verde) */
+        .btn-unban {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-unban:hover {
+            background: rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+
+        /* Adicione isso no seu bloco <style> */
+        .user-banned-row {
+            opacity: 0.6;
+            background-color: rgba(239, 68, 68, 0.05);
+            /* Vermelho bem clarinho */
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+    <div class="dashboard-container">
+        <aside class="sidebar" style="border-right: 1px solid rgba(139, 92, 246, 0.2);">
+            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
+                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px;">
+            </a>
+            <nav class="sidebar-menu">
+                <a href="/admin/dashboard" class="sidebar-item"><i class="ph ph-chart-line-up"></i></a>
+                <a href="/admin/usuarios" class="sidebar-item active"
+                    style="color: #a78bfa; border-color: #a78bfa; background: rgba(139, 92, 246, 0.1);"><i
+                        class="ph ph-users"></i></a>
+                <a href="/admin/projetos" class="sidebar-item"><i class="ph ph-briefcase"></i></a>
+                <a href="/chat" class="sidebar-item" title="Mensagens">
+                    <i class="ph ph-chat-circle-dots"></i>
+                    {{ if gt .NaoLidas 0 }}
+                    <span class="badge-dot" style="margin-left: -5.5px; margin-bottom: 25px;"></span>
+                    {{ end }}
+                </a>
+                <a href="/admin/perfil" class="sidebar-item" title="Perfil">
+                    <i class="ph ph-gear"></i>
+                </a>
+            </nav>
+            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;"><i
+                    class="ph ph-power"></i></a>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Gerenciar Usuários</h1>
+                    <p style="color: var(--text-gray);">Controle total sobre a base de usuários</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: right;">
+                        <span style="display: block; font-weight: 600; color: white;">{{ .Usuario.NomeCompleto
+                            }}</span>
+                        <span style="font-size: 0.8rem; color: #a78bfa;">Super Admin</span>
+                    </div>
+                    {{ if .Usuario.FotoPerfil }}
+                    <img src="{{ .Usuario.FotoPerfil }}"
+                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #a78bfa;">
+                    {{ else }}
+                    <div
+                        style="width: 45px; height: 45px; background: #a78bfa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black;">
+                        AD</div>
+                    {{ end }}
+                </div>
+            </div>
+
+            <form action="/admin/usuarios" method="GET" class="admin-search-form"
+                style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" name="q" value="{{ .Filtro }}" class="form-input"
+                    placeholder="Buscar por nome ou email..." style="max-width: 300px;">
+                <button type="submit" class="btn btn-primary"
+                    style="background: #a78bfa; border-color: #a78bfa;">Filtrar</button>
+            </form>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Usuarios }}
+                        <tr class="{{ if .IsBanned }}user-banned-row{{ end }}">
+                            <td>#{{ .Id }}</td>
+                            <td style="display: flex; align-items: center; gap: 10px;">
+                                {{ if .FotoPerfil }}
+                                <img src="{{ .FotoPerfil }}"
+                                    style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+                                {{ else }}
+                                <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .NomeCompleto }}"
+                                    style="width: 30px; height: 30px; border-radius: 50%;">
+                                {{ end }}
+                                {{ .NomeCompleto }}
+                            </td>
+                            <td>{{ .Email }}</td>
+                            <td>
+                                {{ if eq .TipoUsuario "DEV" }}
+                                <span class="badge badge-dev">Dev</span>
+                                {{ else if eq .TipoUsuario "EMPRESA" }}
+                                <span class="badge badge-company">Empresa</span>
+                                {{ else }}
+                                <span class="badge" style="background: #7c3aed; color: white;">Admin</span>
+                                {{ end }}
+                            </td>
+
+                            <td>
+                                {{ if .IsBanned }}
+                                <span style="color: #ef4444; font-weight: bold; font-size: 0.9rem;">BANIDO</span>
+                                {{ else }}
+                                <span style="color: #10b981; font-size: 0.9rem;">Ativo</span>
+                                {{ end }}
+                            </td>
+
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+
+                                    {{ if eq .TipoUsuario "ADMIN" }}
+                                    <a href="/admin/remover-admin?id={{ .Id }}" class="btn-remove-admin"
+                                        title="Remover Admin"
+                                        onclick="return confirm('Tirar permissão de Admin de {{ .NomeCompleto }}?');">
+                                        <i class="ph ph-user-minus"></i>
+                                    </a>
+
+                                    {{ else if eq .TipoUsuario "DEV" }}
+                                    <a href="/admin/promover?id={{ .Id }}" class="btn-make-admin" title="Tornar Admin"
+                                        onclick="return confirm('Promover {{ .NomeCompleto }} a Admin?');">
+                                        <i class="ph ph-crown-simple"></i>
+                                    </a>
+
+                                    {{ end }}
+
+
+                                    {{ if .IsBanned }}
+                                    <a href="/admin/banir?id={{ .Id }}" class="btn-unban" title="Reativar Usuário"
+                                        onclick="return confirm('Desbanir {{ .NomeCompleto }}?');">
+                                        <i class="ph ph-check"></i>
+                                    </a>
+                                    {{ else }}
+                                    <a href="/admin/banir?id={{ .Id }}" class="btn-ban" title="Banir Usuário"
+                                        onclick="return confirm('Tem certeza que deseja BANIR {{ .NomeCompleto }}?');">
+                                        <i class="ph ph-prohibit"></i>
+                                    </a>
+                                    {{ end }}
+
+                                </div>
+                            </td>
+                        </tr>
+                        {{ else }}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-gray);">Nenhum
+                                usuário encontrado.</td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

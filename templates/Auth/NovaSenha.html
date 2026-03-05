@@ -1,0 +1,241 @@
+{{ define "NovaSenha" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - NexHub</title>
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            background-color: #09090b;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .auth-card-custom {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #a1a1aa;
+            font-size: 1.3rem;
+            z-index: 20;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--brand-teal);
+        }
+
+        /* --- CHECKLIST DE SENHA --- */
+        .password-requirements {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            color: #a1a1aa;
+            /* Cor inicial neutra */
+        }
+
+        .req-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Estado Inválido */
+        .req-invalid {
+            color: #ef4444;
+        }
+
+        .req-invalid i {
+            color: #ef4444;
+        }
+
+        /* Estado Válido */
+        .req-valid {
+            color: #10b981;
+        }
+
+        .req-valid i {
+            color: #10b981;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card-custom {
+                width: 90%;
+                padding: 25px;
+            }
+
+            .auth-card-custom h2 {
+                font-size: 1.3rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <div class="auth-card-custom">
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div
+                style="background: rgba(0, 255, 209, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; border: 1px solid rgba(0, 255, 209, 0.2);">
+                <i class="ph ph-lock-key" style="font-size: 2rem; color: var(--brand-teal, #00ffd1);"></i>
+            </div>
+            <h2 style="color: white; margin-bottom: 10px; font-size: 1.5rem; font-weight: 700; margin-top: 0;">Criar
+                Nova Senha</h2>
+            <p style="color: #a1a1aa; font-size: 0.95rem; line-height: 1.5; margin: 0;">Tudo certo! Agora crie uma senha
+                forte.</p>
+        </div>
+
+        <form action="/recuperar/salvar" method="POST">
+            <input type="hidden" name="email" value="{{ .Email }}">
+            <input type="hidden" name="codigo" value="{{ .Codigo }}">
+
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label class="form-label"
+                    style="display: block; color: white; margin-bottom: 10px; font-size: 0.9rem; font-weight: 500;">Nova
+                    Senha</label>
+
+                <div style="position: relative; width: 100%;">
+                    <i class="ph ph-lock"
+                        style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #71717a; font-size: 1.3rem; pointer-events: none;"></i>
+
+                    <input type="password" id="nova_senha" name="nova_senha" placeholder="Digite sua nova senha"
+                        required onkeyup="validarSenhaInput()"
+                        style="width: 100%; height: 50px; padding: 0 45px; background-color: #27272a; border: 1px solid #3f3f46; color: white; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;">
+
+                    <i class="ph ph-eye-slash password-toggle" onclick="togglePassword('nova_senha', this)"></i>
+                </div>
+
+                <div class="password-requirements">
+                    <div id="req-length" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> Mínimo 8
+                        caracteres</div>
+                    <div id="req-upper" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Letra
+                        maiúscula</div>
+                    <div id="req-lower" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Letra
+                        minúscula</div>
+                    <div id="req-number" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Número</div>
+                    <div id="req-special" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Caractere
+                        especial (!@#$...)</div>
+                </div>
+            </div>
+
+            <button type="submit" id="btn-submit" class="btn btn-primary" disabled
+                style="width: 100%; height: 50px; background: var(--brand-orange, #f59e0b); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: not-allowed; opacity: 0.5; font-size: 1rem; transition: transform 0.2s;">
+                Alterar Senha
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        // Efeito de Foco
+        const input = document.querySelector('input[name="nova_senha"]');
+        input.addEventListener('focus', () => { input.style.borderColor = 'var(--brand-teal, #00ffd1)'; });
+        input.addEventListener('blur', () => { input.style.borderColor = '#3f3f46'; });
+
+        // Olhinho (Mostrar/Esconder)
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("ph-eye-slash");
+                icon.classList.add("ph-eye");
+            } else {
+                input.type = "password";
+                icon.classList.remove("ph-eye");
+                icon.classList.add("ph-eye-slash");
+            }
+        }
+
+        // Validação de Senha em Tempo Real
+        function validarSenhaInput() {
+            const senha = document.getElementById('nova_senha').value;
+            const btn = document.getElementById('btn-submit');
+
+            // Regras Regex
+            const hasLength = senha.length >= 8;
+            const hasUpper = /[A-Z]/.test(senha);
+            const hasLower = /[a-z]/.test(senha);
+            const hasNumber = /[0-9]/.test(senha);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(senha);
+
+            // Atualiza UI
+            updateRequirement('req-length', hasLength);
+            updateRequirement('req-upper', hasUpper);
+            updateRequirement('req-lower', hasLower);
+            updateRequirement('req-number', hasNumber);
+            updateRequirement('req-special', hasSpecial);
+
+            // Habilita/Desabilita Botão
+            if (hasLength && hasUpper && hasLower && hasNumber && hasSpecial) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            }
+        }
+
+        function updateRequirement(id, isValid) {
+            const el = document.getElementById(id);
+            const icon = el.querySelector('i');
+
+            if (isValid) {
+                el.classList.remove('req-invalid');
+                el.classList.add('req-valid');
+                icon.classList.remove('ph-x-circle');
+                icon.classList.add('ph-check-circle');
+            } else {
+                el.classList.remove('req-valid');
+                el.classList.add('req-invalid');
+                icon.classList.remove('ph-check-circle');
+                icon.classList.add('ph-x-circle');
+            }
+        }
+    </script>
+
+</body>
+
+</html>
+{{ end }}

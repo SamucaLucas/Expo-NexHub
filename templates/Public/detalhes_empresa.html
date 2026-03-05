@@ -1,0 +1,185 @@
+{{ define "DetalheEmpresa" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>{{ .Empresa.NomeFantasia }} - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* --- ESTILOS ESPECÍFICOS PARA EMPRESA --- */
+        .btn-fav-ativo {
+            background: rgba(255, 153, 0, 0.2) !important;
+            border: 1px solid var(--brand-orange) !important;
+            color: var(--brand-orange) !important;
+        }
+
+        .btn-fav-inativo {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .company-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            /* Quadrado arredondado para logo */
+            border: 2px solid var(--brand-orange);
+            object-fit: contain;
+            background: white;
+            /* Fundo branco para logos transparentes */
+            padding: 5px;
+        }
+
+        .info-card {
+            background: rgba(24, 24, 27, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .company-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+
+    <div style="padding: 20px 40px;">
+        <a href="javascript:history.back()"
+            style="color: var(--text-gray); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+            <i class="ph ph-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="main-content" style="margin-left: 0; padding-top: 0; max-width: 1200px; margin: 0 auto;">
+
+        <div class="detail-layout" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+
+            <div>
+                <div class="company-header">
+                    {{ if .Empresa.FotoPerfil }}
+                    <img src="{{ .Empresa.FotoPerfil }}" class="company-logo">
+                    {{ else }}
+                    <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ .Empresa.NomeFantasia }}"
+                        class="company-logo">
+                    {{ end }}
+
+                    <div>
+                        <h1 style="color: white; font-size: 2rem; margin: 0;">{{ .Empresa.NomeFantasia }}</h1>
+
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+                            <span class="badge"
+                                style="background: rgba(255, 153, 0, 0.15); color: var(--brand-orange); border: 1px solid rgba(255, 153, 0, 0.3);">
+                                {{ .Empresa.RamoAtuacao }}
+                            </span>
+                            <span
+                                style="color: var(--text-gray); font-size: 0.9rem; display: flex; align-items: center; gap: 5px;">
+                                <i class="ph ph-map-pin"></i> {{ .Empresa.Cidade }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="ph ph-info" style="color: var(--brand-orange);"></i> Sobre a Empresa
+                    </h3>
+                    {{ if .Empresa.Biografia }}
+                    <p style="color: var(--text-gray); line-height: 1.6; white-space: pre-wrap;">{{ .Empresa.Biografia
+                        }}</p>
+                    {{ else }}
+                    <p style="color: var(--text-gray); font-style: italic;">Esta empresa ainda não adicionou uma
+                        descrição.</p>
+                    {{ end }}
+                </div>
+
+            </div>
+
+            <aside>
+
+                <div class="info-card">
+                    <span
+                        style="color: var(--text-gray); font-size: 0.9rem; display: block; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Informações de Contato
+                    </span>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+
+                        {{ if .Empresa.SiteEmpresa }}
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-gray);">Website</span>
+                            <a href="{{ .Empresa.SiteEmpresa }}" target="_blank"
+                                style="display: flex; align-items: center; gap: 5px; color: var(--brand-orange); text-decoration: none; font-weight: 500;">
+                                <i class="ph ph-globe"></i> Acessar Site Oficial
+                            </a>
+                        </div>
+                        {{ end }}
+
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-gray);">Responsável</span>
+                            <div style="color: white; display: flex; align-items: center; gap: 5px;">
+                                <i class="ph ph-user"></i> {{ .Empresa.NomeCompleto }}
+                            </div>
+                        </div>
+
+                        {{ if .Empresa.Email }}
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-gray);">Email Corporativo</span>
+                            <div
+                                style="color: white; display: flex; align-items: center; gap: 5px; word-break: break-all;">
+                                <i class="ph ph-envelope"></i> {{ .Empresa.Email }}
+                            </div>
+                        </div>
+                        {{ end }}
+
+                    </div>
+                </div>
+
+
+
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Seleciona todos os links que abrem em nova aba (links externos)
+            const linksExternos = document.querySelectorAll('a[target="_blank"]');
+
+            linksExternos.forEach(link => {
+                let url = link.getAttribute('href');
+                // Se existe URL, não começa com http e não é um link interno (/)
+                if (url && !url.startsWith('http') && !url.startsWith('/')) {
+                    link.href = 'https://' + url;
+                }
+            });
+        });
+    </script>
+
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

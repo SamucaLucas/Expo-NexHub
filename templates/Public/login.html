@@ -1,0 +1,180 @@
+{{ define "Login" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Login - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* --- CORREÇÃO DE CENTRALIZAÇÃO PC --- */
+        body {
+            overflow-x: hidden;
+            /* Evita rolagem lateral */
+        }
+
+        .auth-section-responsive {
+            /* Ocupa exatamente a altura da tela */
+            height: 100vh;
+            width: 100%;
+
+            /* Centraliza o card perfeitamente */
+            display: flex;
+            align-items: center;
+            /* Vertical */
+            justify-content: center;
+            /* Horizontal */
+
+            /* Garante que o padding não aumente o tamanho da tela */
+            box-sizing: border-box;
+
+            /* Pequeno ajuste para o card não ficar atrás da navbar no topo */
+            padding-top: 60px;
+        }
+
+        /* Card de Login */
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- RESPONSIVIDADE MOBILE --- */
+        @media (max-width: 768px) {
+            .auth-section-responsive {
+                /* No celular, usamos min-height para permitir rolagem se o teclado abrir */
+                height: auto;
+                min-height: 100vh;
+                padding-top: 100px;
+                /* Mais espaço para a navbar mobile */
+                padding-left: 20px;
+                padding-right: 20px;
+                padding-bottom: 40px;
+                align-items: flex-start;
+                /* No mobile, fica melhor alinhado ao topo */
+            }
+
+            .auth-card {
+                padding: 25px;
+                /* Card mais compacto no celular */
+            }
+        }
+
+        /* Ícone do Olho */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #71717a;
+            font-size: 1.2rem;
+            z-index: 10;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--brand-teal);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="supernova-container">
+        <div class="orb orb-blue"></div>
+        <div class="orb orb-orange"></div>
+        <div class="orb orb-teal"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/">Início</a></li>
+                <li><a href="/projetos">Projetos</a></li>
+                <li><a href="/talentos">Talentos</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+            </ul>
+            <div class="nav-auth">
+                <a href="/cadastro" class="btn btn-primary">Cadastrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="auth-section-responsive">
+        <div class="auth-card">
+
+            <div style="margin-bottom: 25px; display: flex; flex-direction: column; align-items: center;">
+                <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+                    <img src="static/img/logo1.png" alt="NexHub" style="height: 80px; border-radius: 6px;">
+                </a>
+                <p style="color: var(--text-gray); font-size: 1.1rem; margin-top: 10px;">Bem-vindo de volta</p>
+            </div>
+
+            {{ if .Erro }}
+            <div
+                style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.9rem;">
+                <i class="ph ph-warning-circle" style="vertical-align: middle; margin-right: 5px;"></i> {{ .Erro }}
+            </div>
+            {{ end }}
+
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha" class="form-label">Senha</label>
+                    <div style="position: relative;">
+                        <input type="password" id="senha" name="senha" class="form-input" placeholder="Sua senha"
+                            required style="padding-right: 45px;">
+                        <i class="ph ph-eye-slash password-toggle" onclick="togglePassword('senha', this)"></i>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                    <a href="/esqueci-senha" class="auth-link"
+                        style="font-size: 0.85rem; color: var(--brand-teal);">Esqueci minha senha</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 5px; padding: 14px; font-weight: 600;">Entrar</button>
+            </form>
+
+            <div style="margin-top: 25px; font-size: 0.9rem; color: var(--text-gray); text-align: center;">
+                Não tem uma conta? <a href="/cadastro" class="auth-link">Cadastre-se</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("ph-eye-slash");
+                icon.classList.add("ph-eye");
+            } else {
+                input.type = "password";
+                icon.classList.remove("ph-eye");
+                icon.classList.add("ph-eye-slash");
+            }
+        }
+    </script>
+</body>
+
+</html>
+{{ end }}

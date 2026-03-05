@@ -1,0 +1,2918 @@
+/* static/css/style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+:root {
+    /* --- PALETA DE CORES REESTRUTURADA --- */
+    --bg-color: #0d0d0f;
+    /* Fundo quase preto para contraste */
+    --bg-graphite: #1C1C1E;
+    /* Cor Grafite para a Navbar */
+    --card-bg: rgba(255, 255, 255, 0.05);
+    /* Cores da Marca (Vibrantes) */
+    --brand-blue: #00A3FF;
+    /* Azul do lado esquerdo */
+    --brand-teal: #00FFD1;
+    /* Ciano para detalhes */
+    --brand-orange: #FF9900;
+    /* Laranja para lado direito/botões */
+    --brand-orange-hover: #E68A00;
+    /* Textos */
+    --text-white: #FFFFFF;
+    --text-gray: #A1A1A1;
+    --border-color: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-white);
+    line-height: 1.6;
+    overflow-x: hidden;
+    /* Evita rolagem lateral por causa das animações */
+}
+
+
+/* Container Padrão (Apenas limita a largura, sem flexbox global) */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+
+/* Container específico para a Navbar (Aqui sim usamos Flex) */
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+
+/* Ajuste da Navbar */
+
+.navbar {
+    background-color: var(--bg-graphite);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 80px;
+    /* Altura fixa para não empurrar o conteúdo errado */
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+
+/* Seção Hero (Onde fica o texto e a busca) */
+
+.hero-section {
+    min-height: 100vh;
+    /* Ocupa a altura toda da tela */
+    display: flex;
+    flex-direction: column;
+    /* Um item embaixo do outro */
+    justify-content: center;
+    /* Centraliza Verticalmente */
+    align-items: center;
+    /* Centraliza Horizontalmente */
+    text-align: center;
+    padding-top: 80px;
+    /* Compensação da altura da Navbar */
+    position: relative;
+    z-index: 1;
+}
+
+
+/* Ajuste fino dos elementos do Hero */
+
+.hero-content {
+    max-width: 800px;
+    /* Limita a largura do texto para não esticar demais */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    /* Espaço padrão entre os elementos */
+}
+
+
+/* Ajuste do Container para distribuir os 3 blocos (Logo - Menu - Auth) */
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+
+
+/* Novo: Menu Central */
+
+.nav-menu {
+    display: flex;
+    gap: 30px;
+    /* Espaço entre os links */
+    list-style: none;
+    /* Remove as bolinhas da lista */
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: var(--text-gray);
+    /* Começa cinza para não brigar com o logo */
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+
+/* Efeito Hover: Fica branco e brilha */
+
+.nav-menu a:hover {
+    color: var(--text-white);
+}
+
+
+/* Efeito de "Link Ativo" (Opcional: traço embaixo ao passar o mouse) */
+
+.nav-menu a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--brand-orange);
+    transition: width 0.3s ease;
+}
+
+.nav-menu a:hover::after {
+    width: 100%;
+}
+
+
+/* Auth Buttons (Agrupador da direita) */
+
+.nav-auth {
+    display: flex;
+    gap: 15px;
+}
+
+
+/* --- FUNDO ORBITAL (REESTRUTURADO: AZUL ESQ / LARANJA DIR) --- */
+
+.supernova-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    background: var(--bg-color);
+    overflow: hidden;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    /* Blur alto para parecer luz difusa */
+    opacity: 0.6;
+    mix-blend-mode: screen;
+    /* Mistura luzes */
+    animation: float 20s ease-in-out infinite alternate;
+}
+
+
+/* ORB 1: O Azulzão (Esquerda Superior) */
+
+.orb-blue {
+    top: -10%;
+    left: -10%;
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle, var(--brand-blue), transparent 60%);
+    animation-duration: 25s;
+}
+
+
+/* ORB 2: O Laranjão (Direita Superior/Centro) */
+
+.orb-orange {
+    top: 10%;
+    right: -20%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, var(--brand-orange), transparent 60%);
+    animation-delay: -5s;
+    animation-duration: 28s;
+}
+
+
+/* ORB 3: O Ciano (Baixo Esquerda - Para equilíbrio) */
+
+.orb-teal {
+    bottom: -20%;
+    left: 20%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--brand-teal), transparent 70%);
+    opacity: 0.3;
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(20px, 40px) scale(1.05);
+    }
+    100% {
+        transform: translate(-20px, -20px) scale(0.95);
+    }
+}
+
+
+/* --- TIPOGRAFIA & ELEMENTOS --- */
+
+
+/* Gradiente no Texto H1 (Como na imagem) */
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--brand-teal) 0%, var(--brand-blue) 40%, var(--brand-orange) 100%);
+    -webkit-background-clip: text;
+    background-clip:text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.btn {
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--brand-orange);
+    color: #000;
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-orange-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+    /* Glow no botão */
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-gray);
+}
+
+.btn-ghost:hover {
+    color: var(--text-white);
+}
+
+.input-search {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Fundo sutil */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.input-search:focus {
+    border-color: var(--brand-orange);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+
+/* Glass card básico */
+
+.glass-panel {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+
+/* --- FUNDO ORBITAL (DINÂMICO & VIVO) --- */
+
+.supernova-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    background: var(--bg-color);
+    /* Fundo base escuro */
+    overflow: hidden;
+    /* Importante: impede barra de rolagem quando a luz sai da tela */
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    /* Blur levemente menor para definir mais a cor */
+    opacity: 0.7;
+    /* Aumentei a visibilidade */
+    mix-blend-mode: screen;
+    /* Faz as cores brilharem quando se cruzam */
+    will-change: transform;
+    /* Otimiza performance no navegador */
+}
+
+
+/* ORB 1: AZUL (O Viajante da Esquerda) */
+
+.orb-blue {
+    top: -10%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--brand-blue), transparent 70%);
+    animation: orbit-blue 30s infinite alternate ease-in-out;
+}
+
+
+/* ORB 2: LARANJA (O Viajante da Direita) */
+
+.orb-orange {
+    bottom: -10%;
+    right: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--brand-orange), transparent 70%);
+    animation: orbit-orange 25s infinite alternate ease-in-out;
+}
+
+
+/* ORB 3: CIANO/TEAL (A Cor que faltava - O Satélite Central) */
+
+.orb-teal {
+    top: 30%;
+    left: 40%;
+    width: 40vw;
+    /* Um pouco menor para ser ágil */
+    height: 40vw;
+    background: radial-gradient(circle, var(--brand-teal), transparent 60%);
+    opacity: 0.5;
+    animation: orbit-teal 20s infinite linear;
+    /* Rotação circular */
+}
+
+
+/* --- ANIMAÇÕES DE GRANDE ESCALA --- */
+
+
+/* Azul: Desce cruzando para a direita */
+
+@keyframes orbit-blue {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        transform: translate(60vw, 40vh) scale(1.2);
+    }
+}
+
+
+/* Laranja: Sobe cruzando para a esquerda */
+
+@keyframes orbit-orange {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        transform: translate(-60vw, -40vh) scale(1.2);
+    }
+}
+
+
+/* Ciano: Faz um círculo no meio da tela (Órbita real) */
+
+@keyframes orbit-teal {
+    0% {
+        transform: rotate(0deg) translateX(15vw) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(15vw) rotate(-360deg);
+    }
+}
+
+
+/* --- PÁGINAS DE AUTENTICAÇÃO (Login / Cadastro) --- */
+
+.auth-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+    /* Compensação da Navbar */
+    position: relative;
+    z-index: 1;
+}
+
+.auth-card {
+    background-color: #18181b;
+    /* Um cinza bem escuro, quase preto (Zinc-900) */
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+
+/* Agrupamento de Label + Input */
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+    /* Labels alinhados à esquerda */
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-white);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+
+/* Input específico para formulários (diferente da busca redonda) */
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #27272a;
+    /* Cinza um pouco mais claro que o card */
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: var(--brand-orange);
+    background-color: #303035;
+}
+
+.form-input::placeholder {
+    color: #71717a;
+}
+
+
+/* Links pequenos (Esqueci a senha / Cadastre-se) */
+
+.auth-link {
+    color: var(--brand-teal);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.auth-link:hover {
+    color: #00ffd1;
+    text-decoration: underline;
+}
+
+
+/* --- PÁGINA DE TALENTOS --- */
+
+
+/* Filtros no Topo */
+
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+
+/* Grid Responsivo: Cria colunas automaticamente dependendo do tamanho da tela */
+
+.talent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+}
+
+
+/* O Cartão do Desenvolvedor */
+
+.talent-card {
+    background-color: #18181b;
+    /* Zinc-900 */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.talent-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--brand-teal);
+    /* Brilha Ciano no hover */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+
+/* Avatar com borda colorida */
+
+.talent-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #27272a;
+    margin-bottom: 15px;
+    padding: 3px;
+    /* Espaço entre foto e borda */
+    background: linear-gradient(135deg, var(--brand-orange), var(--brand-teal));
+    /* Borda Gradiente */
+}
+
+
+/* Nome e Cargo */
+
+.talent-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 5px;
+}
+
+.talent-role {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+
+/* Container das Tags de Tecnologia */
+
+.tech-stack {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+
+/* A Etiqueta (Badge) */
+
+.tech-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    color: #d4d4d8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+/* Badge específica para destacar skills principais (Opcional) */
+
+.tech-badge.highlight {
+    background: rgba(0, 255, 209, 0.1);
+    color: var(--brand-teal);
+    border-color: rgba(0, 255, 209, 0.2);
+}
+
+
+/* Status: Disponível */
+
+.status-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #4ade80;
+    /* Verde */
+    background: rgba(74, 222, 128, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #4ade80;
+}
+
+
+/* --- PÁGINA DE PROJETOS --- */
+
+
+/* Card do Projeto */
+
+.project-card {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    /* Garante que a imagem não saia das bordas */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Para alinhar cards lado a lado */
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+
+/* Imagem de Capa */
+
+.project-cover {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    /* Corta a imagem para caber sem esticar */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+
+/* Corpo do Card */
+
+.project-body {
+    padding: 20px;
+    flex: 1;
+    /* Ocupa o espaço restante */
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Categoria (Mineração, Saúde...) */
+
+.project-area {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--brand-teal);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: white;
+    line-height: 1.3;
+}
+
+.project-desc {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp:3;
+    /* Limita a 3 linhas de texto */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* Rodapé do Card (Líder e Status) */
+
+.project-footer {
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* Mini perfil do Líder */
+
+.leader-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #d4d4d8;
+}
+
+.leader-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+
+/* Badges de Status (Cores dinâmicas) */
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.status-concluido {
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    /* Verde */
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.status-andamento {
+    background: rgba(250, 204, 21, 0.1);
+    color: #facc15;
+    /* Amarelo */
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.status-planejado {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    /* Azul */
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+
+/* --- PÁGINA SOBRE (Storytelling) --- */
+
+.about-container {
+    display: flex;
+    align-items: center;
+    /* Centraliza verticalmente */
+    gap: 60px;
+    /* Espaço entre foto e texto */
+    padding: 40px;
+    background: rgba(24, 24, 27, 0.6);
+    /* Fundo sutil */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+
+/* Coluna da Foto */
+
+.about-image-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.profile-photo {
+    width: 350px;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0, 163, 255, 0.2);
+    /* Glow Azul suave */
+    transition: transform 0.3s ease;
+}
+
+.profile-photo:hover {
+    transform: scale(1.02);
+    border-color: var(--brand-orange);
+    /* Muda cor da borda no hover */
+}
+
+
+/* Coluna do Texto */
+
+.about-content {
+    flex: 1.5;
+    /* Ocupa mais espaço que a foto */
+}
+
+.highlight-box {
+    border-left: 4px solid var(--brand-orange);
+    padding-left: 20px;
+    margin: 25px 0;
+    background: linear-gradient(90deg, rgba(255, 153, 0, 0.05), transparent);
+}
+
+
+/* Botões de Contato (Social) */
+
+.social-grid {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-white);
+    transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+    background: var(--text-white);
+    color: #000;
+    transform: translateY(-3px);
+}
+
+
+/* Responsividade para celular (Foto em cima, texto embaixo) */
+
+@media (max-width: 900px) {
+    .about-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .highlight-box {
+        border-left: none;
+        border-top: 4px solid var(--brand-orange);
+        padding: 20px;
+    }
+    .social-grid {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+
+/* --- LANDING PAGE (Index) --- */
+
+
+/* Espaçamento entre seções */
+
+.landing-section {
+    padding: 100px 0;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.section-subtitle {
+    color: var(--text-gray);
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px auto;
+    font-size: 1.1rem;
+}
+
+
+/* GRID DE FUNCIONALIDADES (Features) */
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+
+/* 1. Cards de Funcionalidades (Onde estava mais difícil de ler) */
+
+.feature-card {
+    /* MUDANÇA: Fundo preto com 60% de opacidade (antes era branco 3%) */
+    background: rgba(10, 10, 12, 0.7);
+    /* Aumentei o blur para suavizar mais as cores de fundo */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 40px 30px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* Sombra para destacar do fundo */
+}
+
+.feature-card:hover {
+    background: rgba(20, 20, 25, 0.85);
+    /* Fica mais sólido no hover */
+    transform: translateY(-5px);
+    border-color: var(--brand-orange);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--brand-teal);
+    margin-bottom: 20px;
+}
+
+
+/* COMPARAÇÃO DE USUÁRIOS (Personas) */
+
+.persona-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.persona-box {
+    padding: 40px;
+    border-radius: 20px;
+    /* MUDANÇA: Fundo mais escuro e consistente */
+    background: rgba(13, 13, 15, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Estilo específico para Dev */
+
+.persona-dev {
+    border-top: 4px solid var(--brand-orange);
+}
+
+
+/* Estilo específico para Empresa */
+
+.persona-company {
+    border-top: 4px solid var(--brand-teal);
+}
+
+.check-list {
+    list-style: none;
+    margin-top: 25px;
+    text-align: left;
+}
+
+.check-list li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #d4d4d8;
+}
+
+.check-list i {
+    color: var(--brand-teal);
+    /* Cor do check */
+    font-size: 1.2rem;
+}
+
+
+/* PASSO A PASSO (Steps) */
+
+.steps-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    text-align: center;
+}
+
+.step-item {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.step-number {
+    font-size: 4rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.05);
+    /* Número gigante transparente */
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: -1;
+}
+
+
+/* BANNER DE REGIÃO */
+
+.region-banner {
+    /* MUDANÇA: Gradiente sobre base escura para garantir leitura */
+    background: linear-gradient(90deg, rgba(0, 163, 255, 0.15), rgba(0, 255, 209, 0.05)), rgba(10, 10, 12, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    border: 1px solid rgba(0, 255, 209, 0.15);
+}
+
+.section-title,
+.section-subtitle,
+.hero-content p,
+.feature-card p,
+.step-item p {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    /* Sombra preta suave atrás das letras */
+}
+
+
+/* Responsividade */
+
+@media (max-width: 768px) {
+    .persona-grid {
+        grid-template-columns: 1fr;
+    }
+    .steps-container {
+        flex-direction: column;
+    }
+}
+
+
+/* --- LAYOUT DA ÁREA LOGADA (DASHBOARD) --- */
+
+
+/* 1. ESTRUTURA GLOBAL */
+
+
+/* Removemos o overflow:hidden do body para permitir rolagem natural */
+
+html,
+body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    /* Evita rolagem lateral */
+    overflow-y: auto;
+    /* Scroll nativo do navegador */
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #09090b;
+    position: relative;
+}
+
+
+/* 2. SIDEBAR (MENU FIXO NA ESQUERDA) */
+
+.sidebar {
+    width: 80px;
+    /* Largura fixa fina */
+    background-color: #18181b;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 25px;
+    /* FIXAÇÃO */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    /* Fica acima do conteúdo */
+    overflow-y: auto;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.sidebar-item {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: var(--text-gray);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin: 0 auto;
+}
+
+.sidebar-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sidebar-item.active {
+    background-color: rgba(0, 204, 255, 0.1);
+    color: var(--brand-teal);
+    border: 1px solid rgba(0, 204, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.1);
+}
+
+.sidebar-item i {
+    font-size: 1.5rem;
+}
+
+
+/* 3. CONTEÚDO PRINCIPAL (COM MARGEM PARA O MENU) */
+
+.main-content {
+    flex: 1;
+    margin-left: 80px;
+    /* Empurra o conteúdo para a direita (tamanho da sidebar) */
+    padding: 40px;
+    position: relative;
+    /* Sem height:100vh fixo, para deixar crescer com os projetos */
+    min-height: 100vh;
+}
+
+
+/* Header */
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+
+/* Estatísticas e Ações (Dashboard Home) */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-title {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: #202023;
+}
+
+.action-icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.box-teal {
+    background: rgba(0, 204, 255, 0.1);
+    color: var(--brand-teal);
+}
+
+.box-orange {
+    background: rgba(255, 153, 0, 0.1);
+    color: var(--brand-orange);
+}
+
+.text-orange {
+    color: var(--brand-orange);
+}
+
+.text-teal {
+    color: var(--brand-teal);
+}
+
+
+/* --- TELA MEUS PROJETOS --- */
+
+
+/* Empty State (Caixa "Sem Projetos") */
+
+.empty-state-box {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: var(--text-gray);
+    margin-bottom: 15px;
+}
+
+
+/* Grid de Projetos (Onde ficam os cards) */
+
+.projects-grid {
+    display: grid;
+    /* Colunas responsivas */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 50px;
+    /* Espaço no final */
+}
+
+
+/* Card Individual */
+
+.project-card {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    height: 100%;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+
+/* Imagem do Projeto (Com altura travada para alinhar) */
+
+.project-cover {
+    width: 100%;
+    height: 180px;
+    /* Mágica do alinhamento */
+    object-fit: cover;
+    /* Corta o excesso */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+/* ESTILO DOS STATUS (Restaurado) */
+
+.status-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    /* Espaço para os botões */
+    white-space: nowrap;
+    line-height: normal;
+}
+
+.status-EM_ANDAMENTO {
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.status-CONCLUIDO {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-PLANEJADO {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+
+/* --- BOTÕES (VER / EDITAR) --- */
+
+.actions {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    /* Empurra para o final do card */
+}
+
+
+/* Botão Base */
+
+.btn {
+    /* MÁGICA DA CENTRALIZAÇÃO */
+    display: flex !important;
+    /* Transforma o botão em uma caixa flexível */
+    align-items: center !important;
+    /* Centraliza Verticalmente */
+    justify-content: center !important;
+    /* Centraliza Horizontalmente */
+    text-align: center !important;
+    /* Garante alinhamento de texto */
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    height: 40px;
+    /* Altura fixa para garantir uniformidade */
+}
+
+.btn-primary {
+    background-color: var(--brand-orange);
+    color: #000;
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-orange-hover);
+    box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: white;
+    border: 1px solid #3f3f46;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--brand-blue);
+    border: 1px solid var(--brand-blue);
+}
+
+.btn-outline:hover {
+    background: rgba(0, 163, 255, 0.1);
+}
+
+
+/* --- TELA DE PERFIL (Configurações) --- */
+
+.settings-container {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 900px;
+}
+
+
+/* Área da Foto de Perfil */
+
+.profile-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-edit-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--brand-teal);
+}
+
+.btn-upload {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-upload:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+
+/* Grid do Formulário (2 colunas) */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+
+/* Em telas pequenas, volta para 1 coluna */
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Área de Texto (Bio) */
+
+textarea.form-input {
+    resize: vertical;
+    /* Permite esticar apenas na altura */
+    min-height: 120px;
+}
+
+
+/* --- ÁREA ADMIN (Painel de Controle) --- */
+
+
+/* Tabelas de Gerenciamento */
+
+.admin-table-container {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow-x: auto;
+    /* Rolagem horizontal se a tabela for grande */
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #d4d4d8;
+    font-size: 0.95rem;
+}
+
+.admin-table th {
+    text-align: left;
+    padding: 15px 20px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: white;
+}
+
+.admin-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+
+/* Ações da Tabela (Botões Pequenos) */
+
+.action-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-right: 5px;
+    transition: transform 0.2s;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.btn-edit {
+    background: rgba(0, 163, 255, 0.2);
+    color: #00a3ff;
+}
+
+.btn-ban {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+
+/* Badges de Status Admin */
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-dev {
+    background: rgba(0, 255, 209, 0.1);
+    color: var(--brand-teal);
+    border: 1px solid rgba(0, 255, 209, 0.2);
+}
+
+.badge-company {
+    background: rgba(255, 153, 0, 0.1);
+    color: var(--brand-orange);
+    border: 1px solid rgba(255, 153, 0, 0.2);
+}
+
+.badge-banned {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+
+/* Container dos Gráficos */
+
+.charts-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 2 Gráficos lado a lado */
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+    .charts-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-box {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    height: 350px;
+    /* Altura fixa pro gráfico */
+}
+
+
+/* --- CHAT NEXHUB (Estilo Supernova Glass) --- */
+
+.chat-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    /* Fica acima das orbs de fundo */
+}
+
+
+/* COLUNA ESQUERDA: Lista de Contatos (Vidro Fosco) */
+
+.chat-sidebar {
+    width: 350px;
+    background: rgba(24, 24, 27, 0.6);
+    /* Zinc escuro transparente */
+    backdrop-filter: blur(15px);
+    /* Desfoque forte */
+    -webkit-backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header-left {
+    padding: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+
+/* Lista de Contatos */
+
+.contact-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    /* Prepara para a borda hover */
+}
+
+.contact-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+
+/* Item Ativo (NexHub Style) */
+
+.contact-item.active {
+    background: linear-gradient(90deg, rgba(0, 255, 209, 0.1), transparent);
+    border-left: 3px solid var(--brand-teal);
+    border-radius: 4px 12px 12px 4px;
+    /* Canto quadrado na esquerda */
+}
+
+.contact-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    /* Redondo */
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.contact-info h4 {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.contact-info p {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+
+/* COLUNA DIREITA: Janela de Conversa */
+
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(9, 9, 11, 0.8);
+    /* Fundo mais escuro para ler texto */
+    position: relative;
+}
+
+.chat-header-right {
+    padding: 20px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(24, 24, 27, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+
+/* Área das Mensagens */
+
+.messages-area {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+
+/* Balões de Mensagem (NexHub Style) */
+
+.message-bubble {
+    max-width: 60%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Mensagem DELES (Cinza Glass) */
+
+.msg-them {
+    align-self: flex-start;
+    background-color: #27272a;
+    color: #e4e4e7;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom-left-radius: 4px;
+}
+
+
+/* Mensagem MINHA (Gradiente da Marca) */
+
+.msg-me {
+    align-self: flex-end;
+    /* Gradiente Laranja -> Roxo ou Teal -> Azul, vamos usar o Teal da marca */
+    background: linear-gradient(135deg, var(--brand-teal), #00A3FF);
+    color: #000;
+    /* Texto preto para contraste no ciano */
+    font-weight: 500;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 255, 209, 0.2);
+    /* Glow suave */
+}
+
+
+/* Input de Texto (Flutuante) */
+
+.chat-input-area {
+    padding: 25px;
+    background: transparent;
+}
+
+.input-wrapper {
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: border-color 0.3s;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--brand-teal);
+    box-shadow: 0 0 15px rgba(0, 255, 209, 0.1);
+}
+
+.chat-input {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 100%;
+    outline: none;
+    font-size: 1rem;
+}
+
+
+/* Ícones de ação no input */
+
+.chat-action-btn {
+    color: var(--text-gray);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.chat-action-btn:hover {
+    color: var(--brand-teal);
+    transform: scale(1.1);
+}
+
+
+/* --- TELA NOVO PROJETO --- */
+
+
+/* Caixa de Upload de Imagem */
+
+
+/* Caixa de Upload (Correção) */
+
+.upload-box {
+    display: block;
+    /* IMPORTANTE: Transforma a label em um bloco sólido */
+    width: 100%;
+    /* Ocupa toda a largura disponível */
+    box-sizing: border-box;
+    /* Garante que a borda não aumente o tamanho total */
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+    /* Um respiro do título */
+}
+
+
+/* Efeito Hover (Fica mais visível quando passa o mouse) */
+
+.upload-box:hover {
+    border-color: var(--brand-teal);
+    background: rgba(0, 255, 209, 0.05);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: var(--text-gray);
+    margin-bottom: 10px;
+    transition: color 0.3s;
+}
+
+.upload-box:hover .upload-icon {
+    color: var(--brand-teal);
+}
+
+
+/* Pré-visualização da imagem (quando selecionada) */
+
+#preview-image {
+    width: 100%;
+    /* Ocupa toda a largura disponível dentro do padding */
+    height: auto;
+    /* A mágica! Calcula a altura automaticamente para não distorcer */
+    /* Opcional: Define uma altura máxima para a imagem não ficar gigante se for vertical */
+    max-height: 450px;
+    /* Garante que se atingir a altura máxima, ela corta o excesso em vez de espremer */
+    object-fit: cover;
+    display: none;
+    /* Oculto por padrão */
+    border-radius: 8px;
+    /* Bordas levemente arredondadas */
+}
+
+
+/* Tags Input (Estilo visual simples para separar tecnologias) */
+
+.helper-text {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    margin-top: 5px;
+}
+
+
+/* --- TELA DE EDIÇÃO DE PROJETO --- */
+
+
+/* 1. Cards de Métricas (Mini) */
+
+.metrics-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.metric-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.metric-icon {
+    font-size: 1.5rem;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+/* 2. Galeria (Carrossel Horizontal) */
+
+.gallery-scroll-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    /* Permite rolagem lateral */
+    padding-bottom: 15px;
+    /* Espaço para a barra de rolagem */
+    margin-top: 10px;
+}
+
+
+/* Custom Scrollbar para a galeria */
+
+.gallery-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.gallery-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.gallery-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--brand-teal);
+    border-radius: 4px;
+}
+
+.gallery-item {
+    min-width: 200px;
+    height: 140px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-add-btn {
+    min-width: 200px;
+    height: 140px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-gray);
+}
+
+.gallery-add-btn:hover {
+    border-color: var(--brand-teal);
+    color: var(--brand-teal);
+    background: rgba(0, 255, 209, 0.05);
+}
+
+
+/* Botão de Excluir Imagem (Overlay) */
+
+.delete-img-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ef4444;
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+
+/* 3. Lista de Membros (Equipe) */
+
+.team-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.team-member-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    border-radius: 10px;
+}
+
+.role-badge {
+    background: rgba(0, 163, 255, 0.15);
+    color: #00a3ff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+
+/* --- INTRO ANIMATION (Versão GIF) --- */
+
+#intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    /* Fundo Preto atrás da nebulosa */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: opacity 1s ease-out, visibility 1s;
+}
+
+
+/* Nebulosa Roxa/Azul */
+
+.intro-nebula {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #4c1d95 0%, #000 70%);
+    opacity: 0.7;
+    z-index: -1;
+}
+
+.intro-content {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    display: flex;
+    /* Centraliza tudo */
+    flex-direction: column;
+    align-items: center;
+}
+
+.typing-text {
+    font-size: 2rem;
+    color: white;
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    min-height: 3rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    font-family: sans-serif;
+}
+
+.intro-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+
+/* --- PÁGINAS DE DETALHES (Projetos e Talentos) --- */
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    /* Conteúdo Esquerda, Ações Direita */
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .detail-layout {
+        grid-template-columns: 1fr;
+        /* Celular: uma coluna só */
+    }
+}
+
+
+/* Barra Lateral de Ação (Sticky) */
+
+.action-sidebar {
+    position: sticky;
+    top: 20px;
+    /* Fica presa no topo ao rolar */
+    height: fit-content;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.tech-tag {
+    background: rgba(0, 255, 209, 0.1);
+    color: var(--brand-teal);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(0, 255, 209, 0.2);
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+
+/* Seção de Autor/Equipe no detalhe */
+
+.author-mini-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+
+/* --- TABS DE NAVEGAÇÃO (Filtros Salvos) --- */
+
+.nav-tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 25px;
+}
+
+.nav-tab-item {
+    padding: 10px 5px;
+    color: var(--text-gray);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s;
+    text-decoration: none;
+    /* Caso seja link */
+    background: none;
+    border: none;
+}
+
+.nav-tab-item:hover {
+    color: white;
+}
+
+
+/* Aba Ativa */
+
+.nav-tab-item.active {
+    color: white;
+    font-weight: 600;
+}
+
+.nav-tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    /* Fica em cima da linha da borda */
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--brand-teal);
+    /* Ou Orange dependendo da página */
+    box-shadow: 0 -2px 10px rgba(0, 255, 209, 0.5);
+}
+
+
+/* Variação Laranja para a página de Talentos (opcional, mas ajuda a distinguir) */
+
+.nav-tab-item.active.orange-tab::after {
+    background-color: var(--brand-orange);
+    box-shadow: 0 -2px 10px rgba(255, 153, 0, 0.5);
+}
+
+
+/* Cores dos Status */
+
+.status-tag {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    /* AJUSTE DE ESPAÇAMENTO AQUI 👇 */
+    margin-top: 15px;
+    /* Distância do Título */
+    margin-bottom: 40px;
+    /* AUMENTADO de 25px para 40px para desgrudar dos botões */
+    /* Centralização Horizontal */
+    margin-left: auto;
+    margin-right: auto;
+    line-height: normal;
+}
+
+
+/* Classes específicas para cada situação */
+
+.status-EM_ANDAMENTO {
+    color: #eab308;
+    /* Amarelo */
+}
+
+.status-CONCLUIDO {
+    color: #22c55e;
+    /* Verde */
+}
+
+.status-PLANEJADO {
+    color: #3b82f6;
+    /* Azul */
+}
+
+
+/* =========================================
+   ESTILO DOS CHECKBOXES DE TECNOLOGIA
+========================================= */
+
+
+/* Container do grid */
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Responsivo: ajusta conforme a tela */
+    gap: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+    /* Espaço para a barra de rolagem */
+}
+
+
+/* Esconde o checkbox nativo do navegador */
+
+.tech-checkbox-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+
+/* O "Card" da tecnologia (a label que vamos estilizar) */
+
+.tech-checkbox-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    /* Fundo sutil */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Borda discreta */
+    padding: 10px;
+    border-radius: 8px;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    user-select: none;
+    /* Evita selecionar o texto ao clicar rápido */
+}
+
+
+/* Ícone de check (escondido por padrão) */
+
+.tech-check-icon {
+    color: var(--brand-teal);
+    font-size: 1rem;
+    opacity: 0;
+    /* Invisível */
+    transform: scale(0.5);
+    /* Pequeno */
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    display: none;
+    /* Não ocupa espaço */
+}
+
+
+/* --- ESTADOS DE INTERAÇÃO --- */
+
+
+/* Hover: Passar o mouse */
+
+.tech-checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+
+/* Checked: Quando está marcado */
+
+
+/* O seletor '+' pega o próximo elemento irmão, que é a nossa label */
+
+.tech-checkbox-input:checked+.tech-checkbox-label {
+    background: rgba(0, 255, 209, 0.1);
+    /* Fundo verde transparente */
+    border-color: var(--brand-teal);
+    /* Borda verde neon */
+    color: white;
+    /* Texto branco */
+    box-shadow: 0 0 10px rgba(0, 255, 209, 0.1);
+    /* Brilho sutil */
+}
+
+
+/* Mostra o ícone quando marcado */
+
+.tech-checkbox-input:checked+.tech-checkbox-label .tech-check-icon {
+    opacity: 1;
+    transform: scale(1);
+    display: inline-block;
+    /* Aparece e ocupa espaço */
+}
+
+
+/* Barra de rolagem personalizada para o container */
+
+.tech-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tech-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.tech-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.tech-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* --- ADICIONAIS: FILTROS & DASHBOARD EMPRESA --- */
+
+
+/* 1. Refinamento da Barra de Filtros (Para remover estilos inline do HTML) */
+
+.filter-bar .form-input {
+    border-radius: 50px;
+    /* Deixa inputs e selects redondos */
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.filter-bar .form-input:focus {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: var(--brand-teal);
+}
+
+.filter-bar .btn {
+    border-radius: 50px;
+    /* Botão de filtrar redondo */
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+
+/* 2. Estado de "Sem Resultados" (Busca Vazia) */
+
+.no-results-container {
+    grid-column: 1 / -1;
+    /* Ocupa toda a largura do Grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    text-align: center;
+    color: var(--text-gray);
+    margin-top: 20px;
+}
+
+.no-results-icon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+    color: var(--brand-teal);
+}
+
+
+/* 3. Card Horizontal de Candidato (Para Dashboard da Empresa) */
+
+
+/* Diferente do Card Vertical da Vitrine, empresas preferem listas para salvar talentos */
+
+.candidate-row-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+}
+
+.candidate-row-card:hover {
+    border-color: var(--brand-teal);
+    background-color: rgba(255, 255, 255, 0.02);
+    transform: translateX(5px);
+    /* Move levemente para direita */
+}
+
+.candidate-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.candidate-mini-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.candidate-details h3 {
+    font-size: 1.1rem;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.candidate-details p {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+}
+
+.candidate-actions {
+    display: flex;
+    gap: 10px;
+}
+
+
+/* Responsividade para a lista horizontal */
+
+@media (max-width: 768px) {
+    .candidate-row-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .candidate-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+
+/* --- USER DROPDOWN (NAVBAR) --- */
+
+.user-menu-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.nav-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--brand-teal);
+    transition: transform 0.2s;
+}
+
+.user-menu-container:hover .nav-avatar {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 255, 209, 0.3);
+}
+
+
+/* O Dropdown (Escondido por padrão) */
+
+.user-dropdown {
+    position: absolute;
+    top: 55px;
+    /* Abaixo da foto */
+    right: 0;
+    width: 200px;
+    background: rgba(24, 24, 27, 0.95);
+    /* Fundo escuro */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px;
+    display: none;
+    /* Escondido */
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+}
+
+
+/* Classe para mostrar via JS */
+
+.user-dropdown.show {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.dropdown-item {
+    padding: 12px 15px;
+    color: var(--text-gray);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.dropdown-item.logout {
+    color: #ef4444;
+    /* Vermelho */
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 5px;
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Bolinha Vermelha Genérica */
+.badge-dot {
+    width: 10px; height: 10px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+/* Contador Numérico (Para o Dashboard/Lista) */
+.badge-count {
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Para posicionar no ícone do menu */
+.nav-item-chat {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Texto de mensagem NÃO lida (Destaque) */
+.msg-preview-unread {
+    color: var(--brand-teal) !important;
+    font-weight: 700;
+}
+
+/* Texto de mensagem lida (Padrão) */
+.msg-preview-read {
+    color: var(--text-gray);
+    font-weight: 400;
+}
+
+/* Nome do usuário quando tem mensagem nova */
+.name-unread {
+    color: white;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE GLOBAL (MOBILE & TABLET)
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    
+    /* --- LAYOUT GERAL --- */
+    .container {
+        padding: 0 20px;
+    }
+
+    /* --- NAVBAR PÚBLICA --- */
+    .navbar {
+        height: auto;
+        padding: 15px 0;
+        position: relative; /* Deixa de ser fixed se atrapalhar, ou ajusta padding do body */
+    }
+    
+    .nav-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .hero-section {
+        padding-top: 120px; /* Mais espaço pois a navbar cresceu */
+    }
+
+    /* --- ADMIN & DASHBOARD LAYOUT (SIDEBAR -> BOTTOM BAR) --- */
+    .sidebar {
+        width: 100%;
+        height: 60px;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 0;
+        justify-content: space-around;
+        background-color: #18181b; /* Fundo sólido para não ver o conteúdo atrás */
+        z-index: 2000; /* Acima de tudo */
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+    }
+
+    .sidebar-menu {
+        flex-direction: row;
+        margin-top: 0;
+        width: 100%;
+        justify-content: space-evenly;
+        align-items: center;
+        gap: 0;
+    }
+
+    .sidebar-item {
+        margin: 0;
+        border-radius: 0;
+        height: 100%;
+        width: 100%;
+        border-radius: 8px;
+    }
+
+    /* Esconde Logo na barra inferior */
+    .sidebar > a:first-child { 
+        display: none; 
+    }
+    
+    /* Mantém o Logout visível como um ícone na barra */
+    .sidebar > a:last-child { 
+        margin: 0;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+    }
+
+    /* Ajuste do Conteúdo Principal para não ficar atrás da barra */
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+        padding-bottom: 90px; /* Espaço extra para a barra inferior */
+        width: 100%;
+    }
+
+    /* --- CABEÇALHOS DE PÁGINA --- */
+    .dash-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .dash-header > div:last-child {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        background: rgba(255,255,255,0.03);
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    /* --- GRIDS E TABELAS --- */
+    .stats-grid, 
+    .charts-wrapper, 
+    .form-grid,
+    .detail-layout {
+        grid-template-columns: 1fr !important; /* Força 1 coluna */
+    }
+
+    .chart-box {
+        height: 300px; /* Altura menor para gráficos no celular */
+    }
+
+    /* Formulários de Busca (Admin) */
+    .admin-search-form {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .admin-search-form input, 
+    .admin-search-form select, 
+    .admin-search-form button {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Perfil Admin */
+    .profile-edit-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    /* --- EMPRESA --- */
+    .quick-actions-grid {
+        grid-template-columns: 1fr; /* Empilha os botões grandes */
+    }
+
+    .tip-box {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    /* --- DEV --- */
+    .metrics-row {
+        flex-direction: column;
+    }
+
+    .team-member-card {
+        flex-direction: column;
+        align-items: flex-start !important; /* Força alinhamento à esquerda */
+        gap: 15px;
+    }
+    
+    .team-member-card > div, 
+    .team-member-card > a {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Classe auxiliar para a caixa de dica */
+.tip-box {
+    margin-top: 30px; 
+    background: rgba(0, 163, 255, 0.05); 
+    border: 1px solid rgba(0, 163, 255, 0.1); 
+    border-radius: 12px; 
+    padding: 20px; 
+    display: flex; 
+    align-items: center; 
+    gap: 15px;
+}
+
+/* ==========================================================================
+   CHAT RESPONSIVO (MOBILE UX TIPO WHATSAPP)
+   ========================================================================== */
+
+/* Desktop: Botão de voltar para lista fica escondido */
+.btn-back-chat {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .chat-layout {
+        flex-direction: column;
+        height: 100vh; /* Garante altura total */
+    }
+
+    /* Comportamento Padrão: Mostra Lista, Esconde Chat */
+    .chat-sidebar {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        border-right: none;
+    }
+
+    .chat-window {
+        width: 100%;
+        height: 100%;
+        display: none; /* Escondido inicialmente */
+    }
+
+    /* Quando um chat está aberto (Classe adicionada via Go Template) */
+    .chat-layout.mobile-chat-active .chat-sidebar { display: none; }
+    .chat-layout.mobile-chat-active .chat-window { display: flex; }
+
+    /* Botão de Voltar (Só aparece no mobile dentro do chat) */
+    .btn-back-chat {
+        display: flex;
+        margin-right: 15px;
+        color: var(--text-gray);
+        text-decoration: none;
+    }
+}

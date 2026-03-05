@@ -1,0 +1,213 @@
+{{ define "DetalheTalento" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>{{ .Talento.NomeCompleto }} - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* CLASSES PARA O BOTÃO DE FAVORITO */
+
+        .btn-fav-ativo {
+            background: rgba(255, 153, 0, 0.2) !important;
+            border: 1px solid var(--brand-orange) !important;
+            color: var(--brand-orange) !important;
+        }
+
+        .btn-fav-inativo {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+
+    <div style="padding: 20px 40px;">
+        <a href="javascript:history.back()"
+            style="color: var(--text-gray); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+            <i class="ph ph-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="main-content" style="margin-left: 0; padding-top: 0;">
+
+        <div class="detail-layout">
+
+            <div>
+                <div class="profile-header">
+                    {{ if .Talento.FotoPerfil }}
+                    <img src="{{ .Talento.FotoPerfil }}"
+                        style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--brand-teal); object-fit: cover;">
+                    {{ else }}
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .Talento.NomeCompleto }}"
+                        style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--brand-teal);">
+                    {{ end }}
+
+                    <div>
+                        <h1 style="color: white; font-size: 2rem; margin: 0;">{{ .Talento.NomeCompleto }}</h1>
+                        <p style="color: var(--brand-teal); font-size: 1.1rem; margin-top: 5px;">{{
+                            .Talento.TituloProfissional }} • {{.Talento.Nivel}}</p>
+                        <p style="color: var(--text-gray);"><i class="ph ph-map-pin"></i> {{ .Talento.Cidade }}</p>
+                    </div>
+                </div>
+
+                <h3 style="color: white;">Sobre</h3>
+                <p style="color: var(--text-gray); line-height: 1.6; margin-bottom: 30px; white-space: pre-wrap;">{{
+                    .Talento.Biografia }}</p>
+
+                <h3 style="color: white; margin-bottom: 20px;">Projetos e Participações</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                    {{ range .Projetos }}
+
+                    <div class="feature-card"
+                        style="padding: 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: rgba(255,255,255,0.02); position: relative; transition: transform 0.2s;">
+
+                        <a href="/projeto/detalhes?id={{ .Id }}"
+                            style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></a>
+
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <h4 style="color: white; margin: 0; font-size: 1.1rem;">{{ .Titulo }}</h4>
+                            {{ if .Visualizacoes }}
+                            <span style="font-size: 0.7rem; color: var(--text-gray);"><i class="ph ph-eye"></i> {{
+                                .Visualizacoes }}</span> {{ end }}
+                        </div>
+
+                        <div style="margin-bottom: 10px; position: relative; z-index: 2;">
+                            {{ if eq .IdLider $.Talento.Id }}
+                            <span
+                                style="font-size: 0.65rem; background: rgba(255, 153, 0, 0.15); color: var(--brand-orange); border: 1px solid rgba(255, 153, 0, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-crown"></i> Líder
+                            </span> {{ else }}
+                            <span
+                                style="font-size: 0.65rem; background: rgba(0, 255, 209, 0.15); color: var(--brand-teal); border: 1px solid rgba(0, 255, 209, 0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="ph ph-users"></i> Membro
+                            </span> {{ end }}
+                        </div>
+
+                        <p
+                            style="font-size: 0.8rem; color: var(--text-gray); margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ .Descricao }}
+                        </p>
+
+                        <div style="position: relative; z-index: 2;">
+                            {{ if eq .Status "Concluido" }}
+                            <span
+                                style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 8px; border-radius: 4px;">Concluído</span>
+                            {{ else if eq .Status "Em Andamento" }}
+                            <span
+                                style="font-size: 0.7rem; background: rgba(250, 204, 21, 0.1); color: #facc15; padding: 2px 8px; border-radius: 4px;">Em
+                                Andamento</span> {{ else }}
+                            <span
+                                style="font-size: 0.7rem; background: rgba(96, 165, 250, 0.1); color: #60a5fa; padding: 2px 8px; border-radius: 4px;">Planejado</span>
+                            {{ end }}
+                        </div>
+                    </div>
+                    {{ else }}
+                    <p style="color: var(--text-gray); grid-column: 1/-1;">Este desenvolvedor ainda não participa de
+                        projetos.</p>
+                    {{ end }}
+                </div>
+            </div>
+
+
+
+            <aside class="action-sidebar">
+
+                <div style="margin-bottom: 30px;">
+                    <span
+                        style="color: var(--text-gray); font-size: 0.9rem; display: block; margin-bottom: 10px;">Habilidades</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        {{ range .Talento.SkillsComoLista }}
+                        <span class="tech-tag"
+                            style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.8rem;">{{
+                            . }}</span> {{ else }}
+                        <span style="color: var(--text-gray); font-size: 0.8rem;">Nenhuma skill listada.</span> {{ end
+                        }}
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    {{ if .Talento.GithubLink }}
+                    <a href="{{ .Talento.GithubLink }}" target="_blank" class="btn btn-ghost"
+                        style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; text-decoration: none;">
+                        <i class="ph ph-github-logo" style="margin-right: 5px;"></i> Ver GitHub
+                    </a>
+                    {{ end }} {{ if .Talento.LinkedinLink }}
+                    <a href="{{ .Talento.LinkedinLink }}" target="_blank" class="btn btn-ghost"
+                        style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 10px; border: 1px solid rgba(0, 119, 181, 0.5); background: rgba(0, 119, 181, 0.1); border-radius: 5px; color: white; text-decoration: none;">
+                        <i class="ph ph-linkedin-logo" style="margin-right: 5px;"></i> LinkedIn
+                    </a>
+                    {{ end }} {{ if .Talento.PortfolioLink }}
+                    <a href="{{ .Talento.PortfolioLink }}" target="_blank" class="btn btn-ghost"
+                        style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; text-decoration: none;">
+                        <i class="ph ph-globe" style="margin-right: 5px;"></i> Portfolio
+                    </a>
+                    {{ end }}
+                </div>
+
+                {{ if eq .Role "Empresa" }}
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+
+                <a href="/favoritar?id={{ .Talento.Id }}&tipo=DEV"
+                    class="btn {{ if .Salvou }}btn-fav-ativo{{ else }}btn-fav-inativo{{ end }}"
+                    style="width: 100%; justify-content: center; margin-bottom: 10px; display: flex; align-items: center; text-decoration: none;">
+
+                    <i class="{{ if .Salvou }}ph-fill{{ else }}ph{{ end }} ph-star"
+                        style="margin-right: 8px; font-size: 1.2rem;"></i> {{ if .Salvou }}Talento Salvo{{ else }}Salvar
+                    Talento{{ end }}
+                </a>
+
+                <a href="/chat?id={{ .Talento.Id }}" class="btn btn-primary"
+                    style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 12px; background: var(--brand-teal); border: none; border-radius: 5px; color: black; font-weight: bold; text-decoration: none;">
+                    <i class="ph ph-briefcase" style="margin-right: 5px;"></i> Enviar Proposta
+                </a>
+
+                {{ else if eq .Role "Dev" }}
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+
+                <a href="/chat?id={{ .Talento.Id }}" class="btn btn-primary"
+                    style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 12px; background: var(--brand-teal); border: none; border-radius: 5px; color: black; font-weight: bold; text-decoration: none; margin-bottom: 10px;">
+                    <i class="ph ph-handshake" style="margin-right: 5px;"></i> Vamos Conversar
+                </a>
+
+                {{ else }}
+                <div
+                    style="background: rgba(255, 153, 0, 0.1); border: 1px solid rgba(255, 153, 0, 0.2); padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px;">
+                    <p style="color: white; font-size: 0.9rem; margin-bottom: 10px;">Quer conectar com este talento?</p>
+                    <a href="/login" class="btn btn-primary"
+                        style="width: 100%; display: inline-block; padding: 10px 0; background: var(--brand-orange); color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Faça Login
+                    </a>
+                </div>
+                {{ end }}
+
+            </aside>
+        </div>
+    </div>
+    {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}

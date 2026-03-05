@@ -1,0 +1,409 @@
+{{ define "DetalheProjeto" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>{{ .Projeto.Titulo }} - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* ESTILOS INTERNOS */
+        .rating-box {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+
+        .rating-box input {
+            display: none !important;
+        }
+
+        .rating-box label {
+            cursor: pointer;
+            color: #52525b;
+            font-size: 2.5rem;
+            transition: 0.2s;
+        }
+
+        .rating-box label:hover,
+        .rating-box label:hover~label,
+        .rating-box input:checked~label {
+            color: #eab308;
+        }
+
+        .rating-box input:checked+label {
+            transform: scale(1.1);
+        }
+
+        .gallery-scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: var(--brand-teal) rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            width: 100%;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-fav-ativo {
+            background: rgba(255, 153, 0, 0.2) !important;
+            border: 1px solid var(--brand-orange) !important;
+            color: var(--brand-orange) !important;
+        }
+
+        .btn-fav-inativo {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        .alert-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .alert-sucesso {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .alert-erro {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .alert-aviso {
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border: 1px solid #facc15;
+        }
+
+        /* Responsividade Local */
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .detail-layout {
+                grid-template-columns: 1fr;
+                /* Empilha no celular */
+            }
+        }
+    </style>
+</head>
+
+<body style="background-color: #09090b;">
+
+    <div
+        style="padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <a href="javascript:history.back()"
+            style="color: var(--text-gray); text-decoration: none; display: flex; align-items: center; gap: 5px;">
+            <i class="ph ph-arrow-left"></i> Voltar
+        </a>
+        <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
+            <img src="/static/img/logo2.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+        </a>
+    </div>
+
+    <div class="main-content" style="margin-left: 0; padding-top: 20px;">
+
+        <div
+            style="max-width: 1200px; margin: 0 auto 30px auto; height: 350px; border-radius: 20px; overflow: hidden; position: relative; background-color: #27272a;">
+            {{ if .Projeto.ImagemCapa }}
+            <img src="{{ .Projeto.ImagemCapa }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {{ else }}
+            <img src="https://via.placeholder.com/1200x400?text=Sem+Capa"
+                style="width: 100%; height: 100%; object-fit: cover;">
+            {{ end }}
+            <div
+                style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #09090b, transparent); height: 150px;">
+            </div>
+            <div style="position: absolute; bottom: 30px; left: 30px;">
+                <span class="badge"
+                    style="background: var(--brand-teal); color: black; padding: 5px 10px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block;">
+                    {{ .Projeto.Categoria }}
+                </span>
+                <h1 style="font-size: 2.5rem; font-weight: 700; color: white; text-shadow: 0 4px 20px black;">{{
+                    .Projeto.Titulo }}</h1>
+                <p style="color: #ccc; margin-top: 5px;"><i class="ph ph-map-pin"></i> {{ .Projeto.Cidade }}</p>
+            </div>
+        </div>
+
+        <div class="detail-layout">
+            <div>
+                <h3 style="color: white; margin-bottom: 15px;">Sobre o Projeto</h3>
+                <p style="color: var(--text-gray); line-height: 1.6; margin-bottom: 30px; white-space: pre-wrap;">{{
+                    .Projeto.Descricao }}</p>
+
+                {{ if .Projeto.Tecnologias }}
+                <div style="margin-bottom: 30px;">
+                    <span
+                        style="color: var(--text-gray); font-size: 0.9rem; display: block; margin-bottom: 10px;">Tecnologias</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        {{ range .Projeto.Tecnologias }}
+                        <span
+                            style="background: rgba(0, 255, 209, 0.1); color: var(--brand-teal); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(0, 255, 209, 0.2); font-weight: 500;">
+                            {{ . }}
+                        </span>
+                        {{ end }}
+                    </div>
+                </div>
+                {{ end }}
+
+                <h3 style="color: white; margin-top: 30px; margin-bottom: 15px;">Liderado por</h3>
+                <div class="author-mini-card"
+                    style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
+                    <a href="/talento/detalhes?id={{ .Projeto.IdLider }}"
+                        style="text-decoration: none; flex-shrink: 0;">
+                        {{ if .AutorAvatar }}
+                        <img src="{{ .AutorAvatar }}"
+                            style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand-teal);">
+                        {{ else }}
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .AutorNome }}"
+                            style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--brand-teal);">
+                        {{ end }}
+                    </a>
+                    <div>
+                        <a href="/talento/detalhes?id={{ .Projeto.IdLider }}"
+                            style="color: white; margin: 0; font-weight: 700; text-decoration: none; font-size: 1.1rem; display: block;">{{
+                            .AutorNome }}</a>
+                        <span style="color: var(--text-gray); font-size: 0.9rem;">Líder do Projeto</span>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="action-sidebar"
+                style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <span style="color: var(--text-gray); font-size: 0.9rem;">Status Atual</span>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                        {{ if eq .Projeto.Status "Concluido" }}
+                        <span
+                            style="width: 10px; height: 10px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 10px #4ade80;"></span>
+                        <span style="color: #4ade80; font-weight: 600;">Concluído</span>
+                        {{ else if eq .Projeto.Status "Em Andamento" }}
+                        <span
+                            style="width: 10px; height: 10px; background: #facc15; border-radius: 50%; box-shadow: 0 0 10px #facc15;"></span>
+                        <span style="color: #facc15; font-weight: 600;">Em Andamento</span>
+                        {{ else }}
+                        <span
+                            style="width: 10px; height: 10px; background: #60a5fa; border-radius: 50%; box-shadow: 0 0 10px #60a5fa;"></span>
+                        <span style="color: #60a5fa; font-weight: 600;">Planejado</span>
+                        {{ end }}
+                    </div>
+                </div>
+
+                {{ if .Projeto.LinkRepo }}
+                <a href="{{ .Projeto.LinkRepo }}" target="_blank" class="btn btn-primary"
+                    style="width: 100%; justify-content: center; background: #333; border-color: #444; margin-bottom: 10px; display: flex; align-items: center; padding: 12px; border-radius: 8px; text-decoration: none; color: white;">
+                    <i class="ph ph-github-logo" style="margin-right: 5px; font-size: 1.2rem;"></i> Ver Código Fonte
+                </a>
+                {{ end }}
+
+                <button id="btn-share" class="btn btn-ghost"
+                    style="width: 100%; justify-content: center; margin-bottom: 10px; color: var(--brand-teal); border: 1px solid rgba(0, 255, 209, 0.2); display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; cursor: pointer; background: rgba(0, 255, 209, 0.05); transition: 0.2s; font-weight: 600;">
+                    <i class="ph ph-share-network" style="font-size: 1.2rem;"></i> <span
+                        id="share-text">Compartilhar</span>
+                </button>
+
+                {{ if eq .Role "Empresa" }}
+                <a href="/favoritar?id={{ .Projeto.Id }}&tipo=PROJETO"
+                    class="btn {{ if .Salvou }}btn-fav-ativo{{ else }}btn-fav-inativo{{ end }}"
+                    style="width: 100%; justify-content: center; display: flex; align-items: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    <i class="{{ if .Salvou }}ph-fill{{ else }}ph{{ end }} ph-bookmark-simple"
+                        style="margin-right: 8px; font-size: 1.2rem;"></i> {{ if .Salvou }}Projeto Salvo{{ else }}Salvar
+                    Projeto{{ end }}
+                </a>
+                {{ end }}
+
+                {{ if .Equipe }}
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color: white; font-size: 1rem; margin-bottom: 15px;">Equipe</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {{ range .Equipe }}
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <a href="/talento/detalhes?id={{ .IdUsuario }}" style="text-decoration: none;">
+                                {{ if .Foto }}
+                                <img src="{{ .Foto }}"
+                                    style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                                {{ else }}
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .Nome }}"
+                                    style="width: 35px; height: 35px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);">
+                                {{ end }}
+                            </a>
+                            <div style="line-height: 1.2;">
+                                <a href="/talento/detalhes?id={{ .IdUsuario }}"
+                                    style="color: #e4e4e7; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: block;">{{
+                                    .Nome }}</a>
+                                <span style="color: var(--brand-teal); font-size: 0.75rem;">{{ .Funcao }}</span>
+                            </div>
+                        </div>
+                        {{ end }}
+                    </div>
+                    {{ if .EhMembro }}
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+                        <span
+                            style="color: var(--brand-teal); font-size: 0.85rem; display: block; margin-bottom: 10px;">
+                            <i class="ph ph-check-circle"></i> Você faz parte desta equipe
+                        </span>
+                        <a href="/dev/projeto/sair?id={{ .Projeto.Id }}"
+                            onclick="return confirm('Tem certeza que deseja sair deste projeto?')" class="btn btn-ghost"
+                            style="width: 100%; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); justify-content: center; display: flex; align-items: center; gap: 5px;">
+                            <i class="ph ph-sign-out"></i> Sair do Projeto
+                        </a>
+                    </div>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </aside>
+        </div>
+
+        {{ if .Projeto.ImagensGaleria }}
+        <div style="max-width: 1200px; margin: 40px auto 0 auto;">
+            <h3 style="color: white; margin-bottom: 20px;">Galeria do Projeto</h3>
+            <div class="gallery-scroll-container">
+                {{ range .Projeto.ImagensGaleria }}
+                <div class="gallery-item"
+                    style="flex: 0 0 300px; width: 300px; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                    <a href="{{ .Caminho }}" target="_blank">
+                        <img src="{{ .Caminho }}"
+                            style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; cursor: zoom-in;"
+                            onmouseover="this.style.transform='scale(1.05)'"
+                            onmouseout="this.style.transform='scale(1)'">
+                    </a>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
+
+        <div class="container" style="margin-top: 40px; max-width: 800px; margin-bottom: 60px;">
+            <h2 style="color: white; margin-bottom: 20px;">Avaliações do Projeto</h2>
+
+            <div
+                style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px; background: rgba(167, 139, 250, 0.1); padding: 20px; border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.2);">
+                <div style="font-size: 2.5rem; font-weight: bold; color: #a78bfa;">{{ .Projeto.MediaEstrelas }}</div>
+                <div>
+                    <div style="color: #eab308; font-size: 1.2rem;">
+                        <i class="ph-fill ph-star"></i>
+                    </div>
+                    <span style="color: var(--text-gray); font-size: 0.9rem;">Baseado em {{ .Projeto.TotalAvaliacoes }}
+                        avaliações</span>
+                </div>
+            </div>
+
+            <div
+                style="background: #18181b; padding: 25px; border-radius: 12px; border: 1px solid #27272a; margin-bottom: 40px;">
+                <h3 style="color: white; margin-bottom: 15px;">Deixe sua opinião</h3>
+
+                {{ if .MensagemAlerta }}
+                <div class="alert-box alert-{{ .TipoAlerta }}">
+                    {{ .MensagemAlerta }}
+                </div>
+                {{ end }}
+
+                <form action="/avaliar/salvar" method="POST">
+                    <input type="hidden" name="id_projeto" value="{{ .Projeto.Id }}">
+
+                    <div class="form-group">
+                        <label style="color: var(--text-gray); display: block; margin-bottom: 5px;">Sua Nota:</label>
+                        <div class="rating-box">
+                            <input type="radio" name="nota" id="star5" value="5" required><label for="star5"
+                                title="Excelente"><i class="ph-fill ph-star"></i></label>
+                            <input type="radio" name="nota" id="star4" value="4"><label for="star4" title="Muito bom"><i
+                                    class="ph-fill ph-star"></i></label>
+                            <input type="radio" name="nota" id="star3" value="3"><label for="star3" title="Bom"><i
+                                    class="ph-fill ph-star"></i></label>
+                            <input type="radio" name="nota" id="star2" value="2"><label for="star2" title="Ruim"><i
+                                    class="ph-fill ph-star"></i></label>
+                            <input type="radio" name="nota" id="star1" value="1"><label for="star1" title="Péssimo"><i
+                                    class="ph-fill ph-star"></i></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="display:block; color: white; margin-top: 15px;">Seu
+                            Nome</label>
+                        <input type="text" name="nomeAvaliador" class="form-input" placeholder="Seu nome" required
+                            style="width: 100%; padding: 10px; margin-top: 5px; background: #27272a; border: 1px solid #3f3f46; color: white; border-radius: 6px;">
+
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="display:block; color: white; margin-top: 15px;">Seu
+                            E-mail</label>
+                        <input type="email" name="email" class="form-input" placeholder="exemplo@dominio.com" required
+                            style="width: 100%; padding: 10px; margin-top: 5px; background: #27272a; border: 1px solid #3f3f46; color: white; border-radius: 6px;">
+                        <small style="color: #71717a; font-size: 0.8rem;">Vamos verificar se este e-mail existe de
+                            verdade.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label class="form-label" style="display:block; color: white;">Comentário</label>
+                        <textarea name="comentario" class="form-input" rows="3"
+                            placeholder="O que você achou do projeto?" required
+                            style="width: 100%; padding: 10px; margin-top: 5px; background: #27272a; border: 1px solid #3f3f46; color: white; border-radius: 6px;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; font-weight: bold; margin-top: 20px; padding: 12px; background: #7deba6; border: none; color: white; border-radius: 6px; cursor: pointer;">
+                        Enviar Avaliação
+                    </button>
+                </form>
+            </div>
+
+            <div class="reviews-list">
+                {{ range .Avaliacoes }}
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <strong style="color: white;">{{ .NomeAvaliador }}</strong>
+                        <span style="color: #eab308;">★ {{ .Nota }}</span>
+                    </div>
+                    <p style="color: #d4d4d8; font-size: 0.95rem;">{{ .Comentario }}</p>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+
+        <script>
+            const btnShare = document.getElementById('btn-share');
+            if (btnShare) {
+                btnShare.addEventListener('click', async () => {
+                    const data = { title: "{{ .Projeto.Titulo }}", url: window.location.href };
+                    try {
+                        if (navigator.share) await navigator.share(data);
+                        else {
+                            await navigator.clipboard.writeText(data.url);
+                            alert("Link copiado!");
+                        }
+                    } catch (e) { }
+                });
+            }
+        </script>
+        {{ template "GlobalNotifications" .Usuario }}
+</body>
+
+</html>
+{{ end }}
