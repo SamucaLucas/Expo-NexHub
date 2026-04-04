@@ -6,36 +6,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Login - NexHub</title>
+    <title>Login Administrativo - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* --- CORREÇÃO DE CENTRALIZAÇÃO PC --- */
         body {
             overflow-x: hidden;
-            /* Evita rolagem lateral */
         }
 
         .auth-section-responsive {
-            /* Ocupa exatamente a altura da tela */
             height: 100vh;
             width: 100%;
-
-            /* Centraliza o card perfeitamente */
             display: flex;
             align-items: center;
-            /* Vertical */
             justify-content: center;
-            /* Horizontal */
-
-            /* Garante que o padding não aumente o tamanho da tela */
             box-sizing: border-box;
-
-            /* Pequeno ajuste para o card não ficar atrás da navbar no topo */
             padding-top: 60px;
         }
 
-        /* Card de Login */
         .auth-card {
             width: 100%;
             max-width: 400px;
@@ -48,28 +36,22 @@
             z-index: 10;
         }
 
-        /* --- RESPONSIVIDADE MOBILE --- */
         @media (max-width: 768px) {
             .auth-section-responsive {
-                /* No celular, usamos min-height para permitir rolagem se o teclado abrir */
                 height: auto;
                 min-height: 100vh;
                 padding-top: 100px;
-                /* Mais espaço para a navbar mobile */
                 padding-left: 20px;
                 padding-right: 20px;
                 padding-bottom: 40px;
                 align-items: flex-start;
-                /* No mobile, fica melhor alinhado ao topo */
             }
 
             .auth-card {
                 padding: 25px;
-                /* Card mais compacto no celular */
             }
         }
 
-        /* Ícone do Olho */
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -89,7 +71,6 @@
 </head>
 
 <body>
-
     <div class="supernova-container">
         <div class="orb orb-blue"></div>
         <div class="orb orb-orange"></div>
@@ -118,9 +99,9 @@
 
             <div style="margin-bottom: 25px; display: flex; flex-direction: column; align-items: center;">
                 <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                    <img src="static/img/logo1.png" alt="NexHub" style="height: 80px; border-radius: 6px;">
+                    <img src="/static/img/logo1.png" alt="NexHub" style="height: 80px; border-radius: 6px;">
                 </a>
-                <p style="color: var(--text-gray); font-size: 1.1rem; margin-top: 10px;">Bem-vindo de volta</p>
+                <p style="color: var(--text-gray); font-size: 1.1rem; margin-top: 10px;">Acesso Administrativo</p>
             </div>
 
             {{ if .Erro }}
@@ -132,7 +113,7 @@
 
             <form action="/login" method="POST">
                 <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">E-mail</label>
                     <input type="email" id="email" name="email" class="form-input" placeholder="seu@email.com" required>
                 </div>
 
@@ -151,11 +132,11 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary"
-                    style="width: 100%; margin-top: 5px; padding: 14px; font-weight: 600;">Entrar</button>
+                    style="width: 100%; margin-top: 5px; padding: 14px; font-weight: 600;">Entrar no Painel</button>
             </form>
 
             <div style="margin-top: 25px; font-size: 0.9rem; color: var(--text-gray); text-align: center;">
-                Não tem uma conta? <a href="/cadastro" class="auth-link">Cadastre-se</a>
+                Colega de ADS? <a href="/cadastro" class="auth-link">Solicite seu acesso</a>
             </div>
         </div>
     </section>

@@ -6,8 +6,8 @@ import (
 	"nexhub/models"
 )
 
-// API: Retorna JSON com lista de usuários para o autocomplete
-func ApiPesquisarDevs(w http.ResponseWriter, r *http.Request) {
+// API: Retorna JSON com lista de alunos para o autocomplete (Vínculo de equipe)
+func ApiPesquisarAlunos(w http.ResponseWriter, r *http.Request) {
 	termo := r.URL.Query().Get("q")
 
 	if len(termo) < 2 {
@@ -15,7 +15,7 @@ func ApiPesquisarDevs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usuarios, err := models.PesquisarDevsPorNome(termo)
+	alunos, err := models.PesquisarAlunosPorNome(termo)
 	if err != nil {
 		http.Error(w, "Erro na busca", 500)
 		return
@@ -23,5 +23,5 @@ func ApiPesquisarDevs(w http.ResponseWriter, r *http.Request) {
 
 	// Configura o header para JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(usuarios)
+	json.NewEncoder(w).Encode(alunos)
 }

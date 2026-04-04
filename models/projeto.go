@@ -1,269 +1,193 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"nexhub/db"
 	"nexhub/structs"
-
-	"github.com/lib/pq"
 )
 
-// Incrementa +1 no contador de visualizações do projeto
-func IncrementarVisualizacao(idProjeto int) error {
-	query := `UPDATE projetos SET visualizacoes = visualizacoes + 1 WHERE id_projeto = $1`
-	_, err := db.DB.Exec(query, idProjeto)
+// ==========================================
+// 1. CRUD BÁSICO DE PROJETOS (ADMIN)
+// ==========================================
+
+// CriarProjeto cadastra a base do projeto (executado pelo Admin de ADS)
+func CriarProjeto(p structs.Projeto) (int, error) {
+	query := `
+		INSERT INTO projetos (
+			titulo, descricao, id_curso, id_area, semestre_letivo, 
+			professor_orientador, status_projeto, imagem_capa, link_repositorio, cadastrado_por
+		) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		RETURNING id_projeto`
+
+	var idGerado int
+	err := db.DB.QueryRow(query,
+		p.Titulo, p.Descricao, p.IdCurso, p.IdArea, p.SemestreLetivo,
+		p.ProfessorOrientador, p.StatusProjeto, p.ImagemCapa, p.LinkRepositorio, p.CadastradoPor,
+	).Scan(&idGerado)
+
+	return idGerado, err
+}
+
+// AtualizarProjeto atualiza as informações gerais do projeto
+func AtualizarProjeto(p structs.Projeto) error {
+	query := `
+		UPDATE projetos 
+		SET titulo=$1, descricao=$2, id_curso=$3, id_area=$4, semestre_letivo=$5, 
+			professor_orientador=$6, status_projeto=$7, link_repositorio=$8, data_atualizacao=CURRENT_TIMESTAMP
+		WHERE id_projeto=$9`
+
+	_, err := db.DB.Exec(query,
+		p.Titulo, p.Descricao, p.IdCurso, p.IdArea, p.SemestreLetivo,
+		p.ProfessorOrientador, p.StatusProjeto, p.LinkRepositorio, p.IdProjeto,
+	)
 	return err
 }
 
-// BuscarProjetosDoDev retorna todos os projetos de um usuário específico
-func BuscarProjetosDoDev(idUsuario int) ([]structs.Projeto, error) {
-	// Query: Seleciona projetos onde o id_lider é igual ao id passado
-	sqlStatement := `
-		SELECT id_projeto, titulo, descricao, status_projeto, cidade_projeto, imagem_capa, visualizacoes 
-		FROM projetos 
-		WHERE id_lider = $1 
-		ORDER BY id_projeto DESC` // Mostra os mais novos primeiro
+// AtualizarCapaProjeto é chamado separadamente caso o admin faça upload de nova capa
+func AtualizarCapaProjeto(idProjeto int, imagemCapa string) error {
+	query := `UPDATE projetos SET imagem_capa=$1 WHERE id_projeto=$2`
+	_, err := db.DB.Exec(query, imagemCapa, idProjeto)
+	return err
+}
 
-	rows, err := db.DB.Query(sqlStatement, idUsuario)
+func DeletarProjeto(id int) error {
+	query := `DELETE FROM projetos WHERE id_projeto = $1`
+	_, err := db.DB.Exec(query, id)
+	if err != nil {
+		log.Println("Erro ao deletar projeto:", err)
+	}
+	return err
+}
+
+// ==========================================
+// 2. BUSCAS E LISTAGENS
+// ==========================================
+
+// BuscarDetalhesProjeto traz todas as informações e agregações do projeto para a Vitrine Pública
+func BuscarDetalhesProjeto(id int) (structs.Projeto, error) {
+	var p structs.Projeto
+
+	// 1. Dados Principais
+	query := `
+		SELECT 
+			p.id_projeto, p.titulo, p.descricao, p.id_curso, p.id_area, 
+			COALESCE(p.semestre_letivo, ''), COALESCE(p.professor_orientador, ''), 
+			p.status_projeto, COALESCE(p.imagem_capa, ''), COALESCE(p.link_repositorio, ''), 
+			p.data_criacao, COALESCE(c.nome_curso, ''), COALESCE(a.nome_area, '')
+		FROM projetos p
+		LEFT JOIN cursos c ON p.id_curso = c.id_curso
+		LEFT JOIN areas a ON p.id_area = a.id_area
+		WHERE p.id_projeto = $1`
+
+	var nomeCurso, nomeArea string
+	err := db.DB.QueryRow(query, id).Scan(
+		&p.IdProjeto, &p.Titulo, &p.Descricao, &p.IdCurso, &p.IdArea,
+		&p.SemestreLetivo, &p.ProfessorOrientador, &p.StatusProjeto,
+		&p.ImagemCapa, &p.LinkRepositorio, &p.DataCriacao,
+		&nomeCurso, &nomeArea,
+	)
+	if err != nil {
+		return p, err
+	}
+	p.Curso = structs.Curso{NomeCurso: nomeCurso}
+	p.Area = structs.Area{NomeArea: nomeArea}
+
+	// 2. Buscar Membros da Equipe (Alunos)
+	p.Equipe, _ = BuscarEquipeDoProjeto(id)
+
+	// 3. Buscar Arquivos (PDFs) e Links
+	p.Arquivos, _ = BuscarArquivosDoProjeto(id)
+	p.Links, _ = BuscarLinksDoProjeto(id)
+
+	// 4. Buscar Galeria de Imagens
+	p.Imagens, _ = BuscarGaleriaDoProjeto(id)
+
+	return p, nil
+}
+
+// BuscarProjetosDoAluno lista todos os projetos onde o aluno participou (para o portfólio)
+func BuscarProjetosDoAluno(idAluno int) ([]structs.Projeto, error) {
+	query := `
+		SELECT 
+			p.id_projeto, p.titulo, p.status_projeto, 
+			COALESCE(p.imagem_capa, ''), COALESCE(c.nome_curso, '')
+		FROM projetos p
+		JOIN projeto_alunos pa ON p.id_projeto = pa.id_projeto
+		LEFT JOIN cursos c ON p.id_curso = c.id_curso
+		WHERE pa.id_aluno = $1 AND p.status_projeto != 'OCULTO'
+		ORDER BY p.id_projeto DESC`
+
+	rows, err := db.DB.Query(query, idAluno)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var projetos []structs.Projeto
-
 	for rows.Next() {
 		var p structs.Projeto
-		// Precisamos ler na mesma ordem do SELECT acima
-		err = rows.Scan(&p.Id, &p.Titulo, &p.Descricao, &p.Status, &p.Cidade, &p.ImagemCapa, &p.Visualizacoes)
-		if err != nil {
-			return nil, err
+		var nomeCurso string
+		if err := rows.Scan(&p.IdProjeto, &p.Titulo, &p.StatusProjeto, &p.ImagemCapa, &nomeCurso); err == nil {
+			p.Curso = structs.Curso{NomeCurso: nomeCurso}
+			projetos = append(projetos, p)
 		}
-		projetos = append(projetos, p)
 	}
-
 	return projetos, nil
 }
 
-// 1. CRIAR PROJETO (Salva o Array)
-func CriarProjeto(p structs.Projeto) (int, error) {
-	// Note o pq.Array(p.Tecnologias)
+// ==========================================
+// 3. GESTÃO DE EQUIPE (VÍNCULO COM ALUNOS)
+// ==========================================
+
+func BuscarEquipeDoProjeto(idProjeto int) ([]structs.Aluno, error) {
 	query := `
-        INSERT INTO projetos (titulo, descricao, status_projeto, cidade_projeto, categoria, link_repositorio, imagem_capa, id_lider, tecnologias) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id_projeto`
-
-	var idGerado int
-	err := db.DB.QueryRow(query,
-		p.Titulo, p.Descricao, p.Status, p.Cidade, p.Categoria, p.LinkRepo, p.ImagemCapa, p.IdLider,
-		pq.Array(p.Tecnologias), // Converte []string para TEXT[] do banco
-	).Scan(&idGerado)
-
-	return idGerado, err
-}
-
-// 2. ATUALIZADO: Buscar projeto para edição (Corrigido: category -> categoria)
-func BuscarProjetoPorID(id int) (structs.Projeto, error) {
-	// Query principal (Projeto)
-	// CORREÇÃO AQUI: Troquei 'category' por 'categoria'
-	query := `
-        SELECT id_projeto, titulo, descricao, status_projeto, cidade_projeto, categoria, imagem_capa, link_repositorio, tecnologias, visualizacoes
-        FROM projetos WHERE id_projeto = $1`
-
-	var p structs.Projeto
-	// O Scan do pq.Array converte de volta para []string
-	err := db.DB.QueryRow(query, id).Scan(
-		&p.Id, &p.Titulo, &p.Descricao, &p.Status, &p.Cidade,
-		&p.Categoria, &p.ImagemCapa, &p.LinkRepo,
-		pq.Array(&p.Tecnologias),
-		&p.Visualizacoes,
-	)
-	if err != nil {
-		return p, err
-	}
-
-	// Query secundária (Galeria com IDs) - MANTIDA IGUAL
-	queryGaleria := `SELECT id_imagem, caminho_imagem FROM projeto_imagens WHERE id_projeto = $1 ORDER BY id_imagem ASC`
-	rows, err := db.DB.Query(queryGaleria, id)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var img structs.ImagemGaleria
-			if err := rows.Scan(&img.Id, &img.Caminho); err == nil {
-				p.ImagensGaleria = append(p.ImagensGaleria, img)
-			}
-		}
-	}
-	return p, nil
-}
-
-// 2. ATUALIZAR PROJETO (Atualiza o Array)
-func AtualizarProjeto(id int, titulo, descricao, status, cidade, categoria, imagemCapa, repo string, tecnologias []string) error {
-	query := `
-        UPDATE projetos 
-        SET titulo=$1, descricao=$2, status_projeto=$3, cidade_projeto=$4, categoria=$5, link_repositorio=$6, tecnologias=$7
-        WHERE id_projeto=$8`
-
-	// Se tiver imagem nova, atualiza ela tmb (lógica simplificada aqui)
-	if imagemCapa != "" {
-		query = `UPDATE projetos SET titulo=$1, descricao=$2, status_projeto=$3, cidade_projeto=$4, categoria=$5, link_repositorio=$6, tecnologias=$7, imagem_capa='` + imagemCapa + `' WHERE id_projeto=$8`
-	}
-
-	_, err := db.DB.Exec(query, titulo, descricao, status, cidade, categoria, repo, pq.Array(tecnologias), id)
-	return err
-}
-
-// 3. DELETAR PROJETO (Corrigido)
-func DeletarProjeto(id int) {
-	// Ajustado para 'id_projeto'
-	query := `DELETE FROM projetos WHERE id_projeto = $1`
-
-	_, err := db.DB.Exec(query, id)
-	if err != nil {
-		log.Println("Erro ao deletar projeto:", err)
-	}
-}
-
-// 1. Função Nova: SALVAR UMA IMAGEM NA GALERIA
-func AdicionarImagemGaleria(idProjeto int, caminhoImagem string) error {
-	query := `INSERT INTO projeto_imagens (id_projeto, caminho_imagem) VALUES ($1, $2)`
-	_, err := db.DB.Exec(query, idProjeto, caminhoImagem)
-	return err
-}
-
-// 2. Função Atualizada: BUSCAR DETALHES (Agora busca as fotos da galeria tmb)
-// models/projeto.go
-func BuscarDetalhesProjeto(id int) (structs.Projeto, string, string, error) {
-	// CORREÇÃO: Adicionei 'p.id_lider' no SELECT
-	query := `
-        SELECT 
-            p.id_projeto, p.titulo, p.descricao, p.status_projeto, p.cidade_projeto, 
-            COALESCE(p.categoria, 'Tecnologia'), COALESCE(p.imagem_capa, ''), COALESCE(p.link_repositorio, ''), 
-            p.tecnologias, 
-            p.id_lider,  -- <--- FALTAVA ISSO AQUI
-            u.nome_completo, COALESCE(u.foto_perfil, ''),
-			COALESCE(p.media_estrelas, 0) as media,  
-    COALESCE(p.total_avaliacoes, 0) as total
-        FROM projetos p
-        JOIN usuarios u ON p.id_lider = u.id_usuario
-        WHERE p.id_projeto = $1`
-
-	var p structs.Projeto
-	var autorNome, autorAvatar string
-
-	// CORREÇÃO: Adicionei '&p.IdLider' no Scan
-	err := db.DB.QueryRow(query, id).Scan(
-		&p.Id, &p.Titulo, &p.Descricao, &p.Status, &p.Cidade,
-		&p.Categoria, &p.ImagemCapa, &p.LinkRepo,
-		pq.Array(&p.Tecnologias),
-		&p.IdLider, // <--- PREENCHENDO O ID DO DONO
-		&autorNome, &autorAvatar, &p.MediaEstrelas, &p.TotalAvaliacoes,
-	)
-	if err != nil {
-		return p, "", "", err
-	}
-
-	// (Parte da Galeria continua igual)
-	queryGaleria := `SELECT id_imagem, caminho_imagem FROM projeto_imagens WHERE id_projeto = $1 ORDER BY id_imagem ASC`
-	rows, err := db.DB.Query(queryGaleria, id)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var img structs.ImagemGaleria
-			if err := rows.Scan(&img.Id, &img.Caminho); err == nil {
-				p.ImagensGaleria = append(p.ImagensGaleria, img)
-			}
-		}
-	}
-
-	return p, autorNome, autorAvatar, err
-}
-
-func DeletarImagemGaleria(idImagem int) {
-	// OBS: Idealmente, deletaríamos o arquivo do disco também,
-	// mas para simplificar, vamos deletar só do banco por enquanto.
-	query := `DELETE FROM projeto_imagens WHERE id_imagem = $1`
-	_, err := db.DB.Exec(query, idImagem)
-	if err != nil {
-		log.Println("Erro ao deletar imagem da galeria:", err)
-	}
-}
-
-//equipes
-
-// 1. Buscar membros de um projeto específico
-func BuscarMembrosDoProjeto(idProjeto int) ([]structs.MembroEquipe, error) {
-	query := `
-        SELECT u.id_usuario, u.nome_completo, COALESCE(u.foto_perfil, ''), 
-        e.funcao_no_projeto, e.data_entrada
-        FROM equipe_projeto e
-        JOIN usuarios u ON e.id_usuario = u.id_usuario
-        WHERE e.id_projeto = $1 AND is_banned = false
-        ORDER BY e.data_entrada ASC
-    `
+		SELECT a.id_aluno, a.nome_completo, COALESCE(a.foto_perfil, ''), COALESCE(pa.funcao_no_projeto, '')
+		FROM projeto_alunos pa
+		JOIN alunos a ON pa.id_aluno = a.id_aluno
+		WHERE pa.id_projeto = $1
+	`
 	rows, err := db.DB.Query(query, idProjeto)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var equipe []structs.MembroEquipe
+	var equipe []structs.Aluno
 	for rows.Next() {
-		var m structs.MembroEquipe
-		// Scan deve seguir a ordem do SELECT
-		rows.Scan(&m.IdUsuario, &m.Nome, &m.Foto, &m.Funcao, &m.DataEntrada)
-		equipe = append(equipe, m)
+		var aluno structs.Aluno
+		var funcao string
+		if err := rows.Scan(&aluno.IdAluno, &aluno.NomeCompleto, &aluno.FotoPerfil, &funcao); err == nil {
+			aluno.Biografia = funcao // Usando o campo Biografia provisoriamente para enviar a "Função" pro template
+			equipe = append(equipe, aluno)
+		}
 	}
 	return equipe, nil
 }
 
-// 2. Adicionar um membro na tabela de ligação
-
-func AdicionarMembroEquipe(idProjeto, idUsuario int, funcao string) error {
-	// 1. Primeiro verifica se o usuário está disponível
-	var disponivel bool
-	err := db.DB.QueryRow("SELECT disponivel_para_trabalho FROM usuarios WHERE id_usuario = $1 AND is_banned = false", idUsuario).Scan(&disponivel)
-
-	if err != nil {
-		return err
-	}
-	if !disponivel {
-		return fmt.Errorf("este usuário não está disponível para projetos")
-	}
-
-	// 2. Se estiver disponível, prossegue com a inserção
+func AdicionarMembroEquipe(idProjeto, idAluno int, funcao string) error {
 	query := `
-        INSERT INTO equipe_projeto (id_projeto, id_usuario, funcao_no_projeto)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (id_projeto, id_usuario) DO UPDATE 
-        SET funcao_no_projeto = EXCLUDED.funcao_no_projeto
-    `
-	_, err = db.DB.Exec(query, idProjeto, idUsuario, funcao)
+		INSERT INTO projeto_alunos (id_projeto, id_aluno, funcao_no_projeto)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (id_projeto, id_aluno) DO UPDATE 
+		SET funcao_no_projeto = EXCLUDED.funcao_no_projeto`
+	_, err := db.DB.Exec(query, idProjeto, idAluno, funcao)
 	return err
 }
 
-// 3. Remover membro
-func RemoverMembroEquipe(idProjeto, idUsuario int) error {
-	query := `DELETE FROM equipe_projeto WHERE id_projeto = $1 AND id_usuario = $2`
-	_, err := db.DB.Exec(query, idProjeto, idUsuario)
+func RemoverMembroEquipe(idProjeto, idAluno int) error {
+	query := `DELETE FROM projeto_alunos WHERE id_projeto = $1 AND id_aluno = $2`
+	_, err := db.DB.Exec(query, idProjeto, idAluno)
 	return err
 }
 
-// 4. Buscar usuários para o Auto-Complete (API)
-// Busca apenas DEVs que NÃO sejam o próprio líder (passamos o liderID para excluir)
-// models/projeto.go
-
-// PesquisarDevsPorNome busca devs para o autocomplete (FILTRANDO DISPONIBILIDADE)
-func PesquisarDevsPorNome(termo string) ([]structs.Usuario, error) {
+// PesquisarAlunosPorNome busca alunos no BD para adicionar à equipe (API)
+func PesquisarAlunosPorNome(termo string) ([]structs.Aluno, error) {
 	query := `
-        SELECT id_usuario, nome_completo, COALESCE(foto_perfil, ''), COALESCE(titulo_profissional, '')
-        FROM usuarios 
-        WHERE tipo_usuario = 'DEV' 
-        AND disponivel_para_trabalho = true 
-		AND is_banned = false
-        AND nome_completo ILIKE $1 
-        LIMIT 5`
+		SELECT id_aluno, nome_completo, COALESCE(foto_perfil, '')
+		FROM alunos 
+		WHERE nome_completo ILIKE $1 
+		LIMIT 5`
 
 	rows, err := db.DB.Query(query, "%"+termo+"%")
 	if err != nil {
@@ -271,76 +195,117 @@ func PesquisarDevsPorNome(termo string) ([]structs.Usuario, error) {
 	}
 	defer rows.Close()
 
-	var lista []structs.Usuario
+	var lista []structs.Aluno
 	for rows.Next() {
-		var u structs.Usuario
-		var titulo string
-
-		// Usei var titulo string para simplificar, o COALESCE no SQL já garante que não vem NULL
-		err = rows.Scan(&u.Id, &u.NomeCompleto, &u.FotoPerfil, &titulo)
-		if err != nil {
-			continue
+		var a structs.Aluno
+		if err := rows.Scan(&a.IdAluno, &a.NomeCompleto, &a.FotoPerfil); err == nil {
+			lista = append(lista, a)
 		}
-
-		u.TituloProfissional = titulo
-		lista = append(lista, u)
 	}
 	return lista, nil
 }
 
-// models/projeto.go
+// ==========================================
+// 4. ANEXOS, LINKS E GALERIA (Q5)
+// ==========================================
 
-// BuscarPortfolioCompleto traz projetos onde o usuário é LÍDER ou MEMBRO
-func BuscarPortfolioCompleto(idUsuario int) ([]structs.Projeto, error) {
-	// Usamos DISTINCT para evitar duplicatas caso o líder se adicione como membro
+func BuscarArquivosDoProjeto(idProjeto int) ([]structs.ProjetoArquivo, error) {
+	query := `SELECT id_arquivo, nome_original, caminho_arquivo, data_upload FROM projeto_arquivos WHERE id_projeto = $1`
+	rows, err := db.DB.Query(query, idProjeto)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var arquivos []structs.ProjetoArquivo
+	for rows.Next() {
+		var arq structs.ProjetoArquivo
+		if err := rows.Scan(&arq.IdArquivo, &arq.NomeOriginal, &arq.CaminhoArquivo, &arq.DataUpload); err == nil {
+			arquivos = append(arquivos, arq)
+		}
+	}
+	return arquivos, nil
+}
+
+func AdicionarLinkProjeto(link structs.ProjetoLink) error {
+	query := `INSERT INTO projeto_links (id_projeto, tipo_link, url, descricao) VALUES ($1, $2, $3, $4)`
+	_, err := db.DB.Exec(query, link.IdProjeto, link.TipoLink, link.Url, link.Descricao)
+	return err
+}
+
+func BuscarLinksDoProjeto(idProjeto int) ([]structs.ProjetoLink, error) {
+	query := `SELECT id_link, tipo_link, url, descricao FROM projeto_links WHERE id_projeto = $1`
+	rows, err := db.DB.Query(query, idProjeto)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var links []structs.ProjetoLink
+	for rows.Next() {
+		var l structs.ProjetoLink
+		if err := rows.Scan(&l.IdLink, &l.TipoLink, &l.Url, &l.Descricao); err == nil {
+			links = append(links, l)
+		}
+	}
+	return links, nil
+}
+
+// Galeria de Imagens
+func AdicionarImagemGaleria(idProjeto int, caminhoImagem string) error {
+	query := `INSERT INTO projeto_imagens (id_projeto, caminho_imagem) VALUES ($1, $2)`
+	_, err := db.DB.Exec(query, idProjeto, caminhoImagem)
+	return err
+}
+
+func BuscarGaleriaDoProjeto(idProjeto int) ([]structs.ProjetoImagem, error) {
+	query := `SELECT id_imagem, caminho_imagem FROM projeto_imagens WHERE id_projeto = $1 ORDER BY id_imagem ASC`
+	rows, err := db.DB.Query(query, idProjeto)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var imagens []structs.ProjetoImagem
+	for rows.Next() {
+		var img structs.ProjetoImagem
+		if err := rows.Scan(&img.IdImagem, &img.CaminhoImagem); err == nil {
+			imagens = append(imagens, img)
+		}
+	}
+	return imagens, nil
+}
+
+func DeletarImagemGaleria(idImagem int) error {
+	query := `DELETE FROM projeto_imagens WHERE id_imagem = $1`
+	_, err := db.DB.Exec(query, idImagem)
+	return err
+}
+
+// ListarTodosProjetosAdmin busca a lista para a tabela do painel de controle
+func ListarTodosProjetosAdmin() ([]structs.Projeto, error) {
 	query := `
-        SELECT DISTINCT 
-            p.id_projeto, p.titulo, p.descricao, p.status_projeto, 
-            p.cidade_projeto, COALESCE(p.imagem_capa, ''), p.visualizacoes, 
-            COALESCE(p.categoria, 'Geral'), p.id_lider,
-            COALESCE(array_to_string(p.tecnologias, ','), '')
-        FROM projetos p
-        LEFT JOIN equipe_projeto e ON p.id_projeto = e.id_projeto
-        WHERE p.id_lider = $1 OR e.id_usuario = $1
-        ORDER BY p.id_projeto DESC
-    `
+		SELECT 
+			p.id_projeto, p.titulo, p.status_projeto, 
+			COALESCE(c.nome_curso, 'Geral') as nome_curso
+		FROM projetos p
+		LEFT JOIN cursos c ON p.id_curso = c.id_curso
+		ORDER BY p.id_projeto DESC`
 
-	rows, err := db.DB.Query(query, idUsuario)
+	rows, err := db.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var projetos []structs.Projeto
-
 	for rows.Next() {
 		var p structs.Projeto
-		err = rows.Scan(
-			&p.Id, &p.Titulo, &p.Descricao, &p.Status,
-			&p.Cidade, &p.ImagemCapa, &p.Visualizacoes,
-			&p.Categoria, &p.IdLider, &p.Tags,
-		)
-		if err != nil {
-			continue
+		var nomeCurso string
+		if err := rows.Scan(&p.IdProjeto, &p.Titulo, &p.StatusProjeto, &nomeCurso); err == nil {
+			p.Curso = structs.Curso{NomeCurso: nomeCurso}
+			projetos = append(projetos, p)
 		}
-		p.Tecnologias = p.TagsComoLista()
-		projetos = append(projetos, p)
 	}
-
 	return projetos, nil
-}
-
-// ContarSavesEmpresa conta quantas empresas favoritaram este projeto
-func ContarSavesEmpresa(idProjeto int) (int, error) {
-	query := `
-        SELECT COUNT(*)
-        FROM favoritos f
-        JOIN usuarios u ON f.id_usuario_quem_salvou = u.id_usuario
-        WHERE f.tipo_item = 'PROJETO' 
-        AND f.id_item_salvo = $1 
-        AND u.tipo_usuario = 'EMPRESA'
-    `
-	var total int
-	err := db.DB.QueryRow(query, idProjeto).Scan(&total)
-	return total, err
 }

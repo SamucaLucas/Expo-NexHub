@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Cadastro - NexHub</title>
+    <title>Cadastro Administrativo - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -23,7 +23,6 @@
             }
         }
 
-        /* --- CORREÇÃO DO ÍCONE DO OLHO --- */
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -33,7 +32,6 @@
             color: #a1a1aa;
             font-size: 1.3rem;
             z-index: 100;
-            /* Garante que fique acima de tudo */
             transition: color 0.2s;
         }
 
@@ -41,7 +39,6 @@
             color: var(--brand-teal);
         }
 
-        /* --- ESTILOS DO CHECKLIST DE SENHA --- */
         .password-requirements {
             margin-top: 15px;
             background: rgba(255, 255, 255, 0.03);
@@ -63,20 +60,16 @@
             margin-bottom: 0;
         }
 
-        /* Estado Inválido (Padrão) */
         .req-invalid {
             color: #ef4444;
-            /* Vermelho */
         }
 
         .req-invalid i {
             color: #ef4444;
         }
 
-        /* Estado Válido */
         .req-valid {
             color: #10b981;
-            /* Verde */
         }
 
         .req-valid i {
@@ -96,7 +89,7 @@
     <nav class="navbar">
         <div class="container nav-container">
             <a href="/" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px;">
-                <img src="static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 40px; border-radius: 6px;">
             </a>
             <ul class="nav-menu">
                 <li><a href="/">Início</a></li>
@@ -114,9 +107,10 @@
         <div class="auth-card" style="max-width: 500px;">
 
             <div style="margin-bottom: 25px; text-align: center;">
-                <img src="static/img/logo1.png" alt="NexHub" style="height: 80px; border-radius: 6px;">
-                <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;">Crie sua conta</h2>
-                <p style="color: var(--text-gray); font-size: 0.95rem;">Junte-se ao ecossistema de inovação local</p>
+                <img src="/static/img/logo1.png" alt="NexHub" style="height: 80px; border-radius: 6px;">
+                <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;">Acesso Restrito</h2>
+                <p style="color: var(--text-gray); font-size: 0.95rem;">Cadastro exclusivo para Analistas (Turma de ADS)
+                </p>
             </div>
 
             {{ if .Erro }}
@@ -135,30 +129,26 @@
                         required>
                 </div>
 
-                <div class="form-group" id="div-nome-fantasia" style="display: none;">
-                    <label for="nome_fantasia" class="form-label">Nome Fantasia</label>
-                    <input type="text" id="nome_fantasia" name="nome_fantasia" class="form-input"
-                        placeholder="Ex: TechFor">
-                </div>
-
                 <div class="form-group">
-                    <label for="email" class="form-label">Email Corporativo ou Pessoal</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="seu@email.com" required
-                        onblur="verificarEmail(this)">
-                    <small id="email-feedback" class="feedback-msg"></small>
-                </div>
-
-                <div class="form-group">
-                    <label for="cidade" class="form-label">Cidade de Atuação</label>
-                    <select id="cidade" name="cidade" class="form-input" required style="cursor: pointer;">
-                        <option value="" disabled selected>Selecione sua cidade...</option>
-                        <option value="Canaã dos Carajás">Canaã dos Carajás</option>
-                        <option value="Parauapebas">Parauapebas</option>
+                    <label for="id_curso_analista" class="form-label">Perfil de Atuação</label>
+                    <select id="id_curso_analista" name="id_curso_analista" class="form-input"
+                        style="cursor: pointer; width: 100%;">
+                        <option value="geral" style="font-weight: bold;">🌍 Analista Geral (Visão Completa)</option>
+                        <optgroup label="Analista Especialista">
+                            {{ range .Cursos }}
+                            <option value="{{ .IdCurso }}"> {{ .NomeCurso }}</option>
+                            {{ end }}
+                        </optgroup>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="senha" class="form-label">Senha</label>
+                    <label for="email" class="form-label">E-mail Acadêmico ou Pessoal</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha" class="form-label">Senha de Acesso</label>
                     <div style="position: relative; width: 100%;">
                         <input type="password" id="senha" name="senha" class="form-input"
                             placeholder="Crie uma senha forte" required style="width: 100%; padding-right: 45px;"
@@ -168,49 +158,22 @@
                     </div>
 
                     <div class="password-requirements">
-                        <div id="req-length" class="req-item req-invalid">
-                            <i class="ph-fill ph-x-circle"></i> Mínimo 8 caracteres
+                        <div id="req-length" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> Mínimo 8
+                            caracteres</div>
+                        <div id="req-upper" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Letra
+                            maiúscula</div>
+                        <div id="req-lower" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Letra
+                            minúscula</div>
+                        <div id="req-number" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1 Número
                         </div>
-                        <div id="req-upper" class="req-item req-invalid">
-                            <i class="ph-fill ph-x-circle"></i> 1 Letra maiúscula
-                        </div>
-                        <div id="req-lower" class="req-item req-invalid">
-                            <i class="ph-fill ph-x-circle"></i> 1 Letra minúscula
-                        </div>
-                        <div id="req-number" class="req-item req-invalid">
-                            <i class="ph-fill ph-x-circle"></i> 1 Número
-                        </div>
-                        <div id="req-special" class="req-item req-invalid">
-                            <i class="ph-fill ph-x-circle"></i> 1 Caractere especial (!@#$...)
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Eu sou:</label>
-                    <div style="display: flex; gap: 15px; margin-top: 8px;">
-                        <label style="flex: 1; cursor: pointer;">
-                            <input type="radio" name="tipo_usuario" value="DEV" checked style="display: none;"
-                                onchange="updateRadioStyle(this)">
-                            <div class="radio-box active"
-                                style="padding: 12px; border: 1px solid var(--brand-orange); background: rgba(255, 153, 0, 0.1); border-radius: 6px; text-align: center; color: white; transition: all 0.2s;">
-                                💻 Desenvolvedor
-                            </div>
-                        </label>
-                        <label style="flex: 1; cursor: pointer;">
-                            <input type="radio" name="tipo_usuario" value="EMPRESA" style="display: none;"
-                                onchange="updateRadioStyle(this)">
-                            <div class="radio-box"
-                                style="padding: 12px; border: 1px solid #3f3f46; background: #27272a; border-radius: 6px; text-align: center; color: #71717a; transition: all 0.2s;">
-                                🏢 Empresa
-                            </div>
-                        </label>
+                        <div id="req-special" class="req-item req-invalid"><i class="ph-fill ph-x-circle"></i> 1
+                            Caractere especial (!@#$...)</div>
                     </div>
                 </div>
 
                 <button type="submit" id="btn-submit" class="btn btn-primary"
                     style="width: 100%; margin-top: 15px; padding: 14px; opacity: 0.5; cursor: not-allowed;" disabled>
-                    Criar Conta
+                    Cadastrar Analista
                 </button>
 
             </form>
@@ -223,23 +186,6 @@
     </section>
 
     <script>
-
-        function traduzirErro(mensagem) {
-            // Se a mensagem contiver termos técnicos de DNS do Go
-            if (mensagem && (mensagem.includes("no such host") || mensagem.includes("lookup"))) {
-                return "Domínio de e-mail inexistente. Verifique a digitação (ex: @gmail.com).";
-            }
-            return mensagem;
-        }
-
-        // 1. Correção Automática do Alerta do Servidor (Ao carregar a página)
-        document.addEventListener("DOMContentLoaded", function () {
-            const serverError = document.getElementById("server-error-msg");
-            if (serverError) {
-                serverError.innerText = traduzirErro(serverError.innerText);
-            }
-        });
-        // 1. Alternar visualização da senha
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === "password") {
@@ -253,51 +199,22 @@
             }
         }
 
-        // 2. Estilo dos Radio Buttons
-        function updateRadioStyle(selectedRadio) {
-            document.querySelectorAll('.radio-box').forEach(box => {
-                box.style.border = '1px solid #3f3f46';
-                box.style.background = '#27272a';
-                box.style.color = '#71717a';
-            });
-            const activeBox = selectedRadio.nextElementSibling;
-            activeBox.style.border = '1px solid var(--brand-orange)';
-            activeBox.style.background = 'rgba(255, 153, 0, 0.1)';
-            activeBox.style.color = 'white';
-
-            const divFantasia = document.getElementById('div-nome-fantasia');
-            const inputFantasia = document.getElementById('nome_fantasia');
-
-            if (selectedRadio.value === 'EMPRESA') {
-                divFantasia.style.display = 'block';
-                inputFantasia.setAttribute('required', 'required');
-            } else {
-                divFantasia.style.display = 'none';
-                inputFantasia.removeAttribute('required');
-                inputFantasia.value = '';
-            }
-        }
-
-        // 3. Validação de Senha em Tempo Real
         function validarSenhaInput() {
             const senha = document.getElementById('senha').value;
             const btn = document.getElementById('btn-submit');
 
-            // Regras
             const hasLength = senha.length >= 8;
             const hasUpper = /[A-Z]/.test(senha);
             const hasLower = /[a-z]/.test(senha);
             const hasNumber = /[0-9]/.test(senha);
             const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(senha);
 
-            // Atualiza UI
             updateRequirement('req-length', hasLength);
             updateRequirement('req-upper', hasUpper);
             updateRequirement('req-lower', hasLower);
             updateRequirement('req-number', hasNumber);
             updateRequirement('req-special', hasSpecial);
 
-            // Habilita ou desabilita botão
             if (hasLength && hasUpper && hasLower && hasNumber && hasSpecial) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
@@ -325,40 +242,7 @@
                 icon.classList.add('ph-x-circle');
             }
         }
-
-        // 4. Verificação de Email (Mantida sua lógica)
-        function verificarEmail(input) {
-            const email = input.value;
-            const feedback = document.getElementById('email-feedback');
-            const btn = document.getElementById('btn-submit');
-
-            if (!email) {
-                feedback.innerText = "";
-                input.style.borderColor = "";
-                return;
-            }
-
-            feedback.innerText = "Verificando e-mail...";
-            feedback.style.color = "#a1a1aa";
-
-            fetch(`/api/verificar-email?email=${encodeURIComponent(email)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.valido || !data.disponivel) {
-                        // APLICA A TRADUÇÃO DO ERRO AQUI
-                        feedback.innerText = traduzirErro(data.mensagem);
-                        feedback.style.color = "#ef4444";
-                        input.style.borderColor = "#ef4444";
-                    } else {
-                        feedback.innerText = "E-mail válido!";
-                        feedback.style.color = "#10b981";
-                        input.style.borderColor = "#10b981";
-                    }
-                })
-                .catch(err => { console.error(err); });
-        }
     </script>
-
 </body>
 
 </html>

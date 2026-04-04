@@ -1,197 +1,161 @@
 package controllers
 
 import (
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
-	"nexhub/config"
 	"nexhub/models"
 	"nexhub/structs"
 	"strconv"
 )
 
-// Carrega TODOS os templates das subpastas (Public, Admin, Dev, etc)
-// O template.Must garante que se houver erro no HTML, o sistema avisa na hora de abrir
 var temp = template.Must(template.ParseGlob("templates/**/*.html"))
 
-func DetalhesTalentoHandler(w http.ResponseWriter, r *http.Request) {
-	// 1. Pega o ID da URL
+// ==========================================
+// 1. PÁGINAS PRINCIPAIS (VITRINE)
+// ==========================================
+
+// IndexHandler renderiza a página inicial (Home)
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	// Futuramente, você pode criar uma função no model para buscar apenas os 3 últimos projetos
+	// projetos, _ := models.ListarUltimosProjetos(3)
+	// talentos, _ := models.ListarUltimosAlunos(4)
+
+	dados := struct {
+		// Projetos []structs.Projeto
+		// Talentos []structs.Aluno
+	}{}
+
+	temp.ExecuteTemplate(w, "Index", dados)
+}
+
+// SobreHandler renderiza a página "Sobre a Plataforma" e lista os Analistas
+func SobreHandler(w http.ResponseWriter, r *http.Request) {
+	analistas, _ := models.ListarAnalistasParaSobre()
+
+	dados := struct {
+		Analistas []models.AnalistaCard
+	}{
+		Analistas: analistas,
+	}
+
+	temp.ExecuteTemplate(w, "Sobre", dados)
+}
+
+// ==========================================
+// 2. VITRINE DE PROJETOS MULTIDISCIPLINARES
+// ==========================================
+
+func ProjetosHandler(w http.ResponseWriter, r *http.Request) {
+	// Aqui você pode capturar filtros da URL (ex: ?curso=direito&status=concluido)
+	// busca := r.URL.Query().Get("q")
+	// idCursoStr := r.URL.Query().Get("curso")
+
+	// projetos, _ := models.ListarProjetosPublicos(busca, idCursoStr)
+
+	dados := struct {
+		// Projetos []structs.Projeto
+	}{}
+
+	temp.ExecuteTemplate(w, "ProjetosPublicos", dados)
+}
+
+func DetalheProjetoHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil || idStr == "" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+	id, _ := strconv.Atoi(idStr)
+
+	if id == 0 {
+		http.Redirect(w, r, "/projetos", http.StatusSeeOther)
 		return
 	}
 
-	// 2. Busca os dados do Talento (Dono do Perfil)
-	talento, err := models.BuscarUsuarioPorID(id)
+	// 1. Busca todos os dados do projeto (arquivos, links, equipe e galeria)
+	projeto, err := models.BuscarDetalhesProjeto(id)
 	if err != nil {
-		http.Error(w, "Talento não encontrado", 404)
+		http.Redirect(w, r, "/projetos", http.StatusSeeOther)
 		return
 	}
 
-	// 3. Busca o Portfólio
-	projetos, _ := models.BuscarPortfolioCompleto(id)
+	// 2. Buscar avaliações/comentários de visitantes (se você for reimplementar o models.Avaliacao)
+	// avaliacoes, _ := models.BuscarAvaliacoesDoProjeto(id)
 
-	// 4. Lógica de Quem está Visitando (Usuario Logado)
-	var usuarioLogado structs.Usuario // Começa vazio (para visitantes não logados)
-	role := "Visitante"
-	estaSalvo := false
-
-	session, _ := config.Store.Get(r, "nexhub-session")
-	if userId, ok := session.Values["userId"].(int); ok {
-		// Busca quem está logado
-		usuarioEncontrado, err := models.BuscarUsuarioPorID(userId)
-		if err == nil {
-			usuarioLogado = usuarioEncontrado
-
-			// Define o papel (Role) baseado em quem está logado
-			if usuarioLogado.TipoUsuario == "EMPRESA" {
-				role = "Empresa"
-				estaSalvo = models.ChecarSeFavoritou(usuarioLogado.Id, talento.Id, "DEV")
-			} else if usuarioLogado.TipoUsuario == "DEV" {
-				role = "Dev"
-			} else if usuarioLogado.TipoUsuario == "ADMIN" {
-				role = "Admin"
-			}
-		}
+	dados := struct {
+		Projeto structs.Projeto
+		// Avaliacoes []structs.Avaliacao
+	}{
+		Projeto: projeto,
 	}
 
-	// 5. Monta o pacote de dados SEPARANDO Visitante de Talento
+	temp.ExecuteTemplate(w, "DetalheProjeto", dados)
+}
+
+// ==========================================
+// 3. VITRINE DE TALENTOS (ALUNOS)
+// ==========================================
+
+func TalentosHandler(w http.ResponseWriter, r *http.Request) {
+	// Busca todos os alunos cadastrados pelos Admins
+	alunos, _ := models.ListarAlunos()
+
 	dados := struct {
-		Usuario  structs.Usuario // Quem vê a página (para Navbar e Notificações)
-		Talento  structs.Usuario // Quem é dono do perfil (Conteúdo principal)
+		Alunos []structs.Aluno
+	}{
+		Alunos: alunos,
+	}
+
+	temp.ExecuteTemplate(w, "TalentosPublicos", dados)
+}
+
+func DetalheTalentoHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, _ := strconv.Atoi(idStr)
+
+	if id == 0 {
+		http.Redirect(w, r, "/talentos", http.StatusSeeOther)
+		return
+	}
+
+	// 1. Busca os dados públicos do Aluno
+	aluno, err := models.BuscarAlunoPorID(id)
+	if err != nil {
+		http.Redirect(w, r, "/talentos", http.StatusSeeOther)
+		return
+	}
+
+	// 2. Busca o portfólio de projetos que o aluno participou
+	projetos, _ := models.BuscarProjetosDoAluno(id)
+
+	dados := struct {
+		Aluno    structs.Aluno
 		Projetos []structs.Projeto
-		Role     string
-		Salvou   bool
 	}{
-		Usuario:  usuarioLogado, // Passa o usuário logado aqui!
-		Talento:  talento,       // Passa o dono do perfil aqui!
+		Aluno:    aluno,
 		Projetos: projetos,
-		Role:     role,
-		Salvou:   estaSalvo,
 	}
 
-	// 6. Renderiza
-	err = temp.ExecuteTemplate(w, "DetalheTalento", dados)
-	if err != nil {
-		// Loga o erro no terminal para você saber o motivo da tela branca
-		fmt.Println("❌ Erro ao renderizar DetalheTalento:", err)
+	temp.ExecuteTemplate(w, "DetalheTalento", dados)
+}
+
+// ==========================================
+// 4. INTERAÇÃO PÚBLICA (COMENTÁRIOS SEM LOGIN)
+// ==========================================
+
+func SalvarAvaliacaoHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		idProjeto, _ := strconv.Atoi(r.FormValue("id_projeto"))
+		nome := r.FormValue("nome")
+		email := r.FormValue("email")
+		comentario := r.FormValue("comentario")
+		// nota, _ := strconv.Atoi(r.FormValue("nota"))
+
+		// Como o visitante não tem login, ele preenche nome e e-mail no form.
+		// Futuramente: implementar o envio de um token pro e-mail para validar antes de exibir.
+		if nome != "" && email != "" && comentario != "" {
+			// models.SalvarAvaliacao(idProjeto, nome, email, nota, comentario)
+		}
+
+		http.Redirect(w, r, "/projeto?id="+strconv.Itoa(idProjeto)+"&sucesso=comentario", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
 
-// 1. INDEX (HOME)
-func Index(w http.ResponseWriter, r *http.Request) {
-	// Verifica sessão (sem travar se for anônimo)
-	user := GetUserFromSession(r)
-
-	dados := PageData2{
-		Usuario: user,
-	}
-
-	err := temp.ExecuteTemplate(w, "Index", dados)
-	if err != nil {
-		log.Println("Erro ao renderizar a Home:", err)
-	}
-}
-
-// 2. PÁGINA SOBRE
-func Sobre(w http.ResponseWriter, r *http.Request) {
-	user := GetUserFromSession(r)
-
-	dados := PageData2{
-		Usuario: user,
-	}
-
-	err := temp.ExecuteTemplate(w, "Sobre", dados)
-	if err != nil {
-		log.Println("Erro ao renderizar Sobre:", err)
-	}
-}
-
-// 3. VITRINE DE PROJETOS (Com Filtros e Sessão)
-func ProjetosVitrineHandler(w http.ResponseWriter, r *http.Request) {
-	// Captura Filtros
-	termo := r.URL.Query().Get("q")
-	categoria := r.URL.Query().Get("categoria")
-	cidade := r.URL.Query().Get("cidade")
-
-	// Busca Dados
-	lista, err := models.BuscarProjetosComFiltro(termo, categoria, cidade)
-	if err != nil {
-		log.Println("Erro ao buscar projetos filtrados:", err)
-	}
-
-	// Pega Usuário Logado
-	user := GetUserFromSession(r)
-
-	// Monta PageData
-	dados := PageData2{
-		Usuario:      user,
-		Dados:        lista, // A lista de projetos vai aqui
-		FiltroTermo:  termo,
-		FiltroCat:    categoria,
-		FiltroCidade: cidade,
-	}
-
-	temp.ExecuteTemplate(w, "Projetos", dados)
-}
-
-// 4. VITRINE DE TALENTOS (Com Filtros e Sessão)
-func TalentosVitrineHandler(w http.ResponseWriter, r *http.Request) {
-	// 1. Pega Usuário Logado PRIMEIRO
-	// (Precisamos do user.Id AGORA para a query saber o que está favoritado)
-	user := GetUserFromSession(r)
-
-	// 2. Captura Filtros
-	termo := r.URL.Query().Get("q")
-	disponivel := r.URL.Query().Get("disponivel")
-	nivel := r.URL.Query().Get("nivel") // <--- Captura o nível da URL
-
-	// 3. Busca Dados (Passando todos os 4 argumentos na ordem correta do Model)
-	lista, err := models.BuscarTalentosComFiltro(termo, nivel, disponivel, user.Id)
-	if err != nil {
-		log.Println("Erro ao buscar talentos:", err)
-	}
-
-	// 4. Monta PageData
-	// Certifique-se que sua struct PageData2 tem o campo FiltroNivel
-	dados := struct {
-		Usuario          structs.Usuario
-		Dados            []structs.Usuario
-		FiltroTermo      string
-		FiltroDisponivel string
-		FiltroNivel      string // <--- Adicionado para manter o select marcado
-	}{
-		Usuario:          user,
-		Dados:            lista,
-		FiltroTermo:      termo,
-		FiltroDisponivel: disponivel,
-		FiltroNivel:      nivel,
-	}
-
-	temp.ExecuteTemplate(w, "Talentos", dados)
-}
-
-// Estruturas de Dados Mock (Futuramente virão do Banco de Dados)
-type ProjetoData struct {
-	Titulo      string
-	Descricao   string
-	Capa        string
-	Categoria   string
-	Status      string
-	AutorNome   string
-	AutorAvatar string
-	Techs       []string
-	Imagens     []string
-}
-
-type TalentoData struct {
-	Nome   string
-	Titulo string
-	Bio    string
-	Cidade string
-	Avatar string
-	Skills []string
-}

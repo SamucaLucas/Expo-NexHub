@@ -1,4 +1,4 @@
-{{ define "Projetos" }}
+{{ define "ProjetosPublicos" }}
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -6,14 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Projetos - NexHub</title>
+    <title>Projetos Acadêmicos - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <style>
-        /* --- ESTILOS RESPONSIVOS E VISUAIS (Idêntico a Talentos) --- */
-
-        /* 1. Barra de Filtros (Vidro Escuro) */
         .filter-bar {
             display: flex;
             gap: 15px;
@@ -27,93 +23,43 @@
             align-items: center;
         }
 
-        /* 2. Grid Inteligente de Projetos */
         .talent-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
-            width: 100%;
-            margin-top: 30px;
         }
 
-        /* 3. Card de Projeto (Vidro Mais Escuro) */
         .project-card {
-            background: rgba(15, 15, 20, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #18181b;
+            border: 1px solid #27272a;
             border-radius: 16px;
             overflow: hidden;
-            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            height: 100%;
-            /* Ocupa altura total da grid */
+            transition: transform 0.2s;
         }
 
         .project-card:hover {
             transform: translateY(-5px);
-            border-color: var(--brand-teal);
-            background: rgba(15, 15, 20, 0.8);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        /* --- ESTILOS INTERNOS DO CARD --- */
-        .card-link-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            cursor: pointer;
-        }
-
-        .card-image-wrapper {
-            position: relative;
-            height: 180px;
-            overflow: hidden;
+            border-color: #3f3f46;
         }
 
         .project-cover {
             width: 100%;
-            height: 100%;
+            height: 160px;
             object-fit: cover;
-            transition: transform 0.5s;
+            border-bottom: 1px solid #27272a;
         }
 
-        .project-card:hover .project-cover {
-            transform: scale(1.05);
-        }
-
-        .category-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-transform: uppercase;
-            font-weight: bold;
-            z-index: 2;
-        }
-
-        .project-body {
+        .project-content {
             padding: 20px;
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            z-index: 2;
-            pointer-events: none;
+            flex-grow: 1;
         }
 
         .project-title {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: white;
             margin-bottom: 8px;
@@ -126,119 +72,46 @@
             margin-bottom: 15px;
             display: -webkit-box;
             -webkit-line-clamp: 3;
-            line-clamp: 3;
+            line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: auto;
-            z-index: 2;
-            position: relative;
-        }
-
-        .tech-badge {
-            background-color: rgba(0, 255, 209, 0.08);
-            border: 1px solid rgba(0, 255, 209, 0.3);
-            color: #00ffd1;
-            padding: 4px 10px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            pointer-events: auto;
-        }
-
-        .project-footer {
-            padding: 15px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        .project-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 2;
-            position: relative;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #27272a;
         }
 
-        .leader-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .leader-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 600;
+        .course-badge {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            color: #d4d4d8;
         }
 
         .btn-details {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
+            display: block;
+            text-align: center;
+            background: rgba(255, 153, 0, 0.1);
+            color: var(--brand-orange);
             padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--brand-teal);
-            text-decoration: none;
-            font-size: 0.9rem;
             font-weight: 600;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-decoration: none;
             transition: background 0.2s;
-            z-index: 2;
-            position: relative;
         }
 
         .btn-details:hover {
-            background: rgba(0, 255, 209, 0.1);
-        }
-
-        /* --- MEDIA QUERY (CELULARES E TABLETS) --- */
-        @media (max-width: 768px) {
-
-            .filter-bar {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 20px;
-            }
-
-            .filter-bar>div {
-                width: 100% !important;
-                min-width: 0 !important;
-                flex: 1 1 auto !important;
-            }
-
-            .filter-bar button {
-                width: 100% !important;
-                margin-top: 10px;
-                height: 48px !important;
-            }
-
-            section {
-                padding-top: 100px !important;
-                padding-bottom: 40px !important;
-            }
-
-            h1 {
-                font-size: 2rem !important;
-            }
+            background: rgba(255, 153, 0, 0.2);
         }
     </style>
 </head>
 
 <body>
-
     <div class="supernova-container">
         <div class="orb orb-blue"></div>
         <div class="orb orb-orange"></div>
@@ -252,179 +125,99 @@
             </a>
             <ul class="nav-menu">
                 <li><a href="/">Início</a></li>
-                <li><a href="/projetos" style="color: white;">Projetos</a></li>
+                <li><a href="/projetos" class="active">Projetos</a></li>
                 <li><a href="/talentos">Talentos</a></li>
                 <li><a href="/sobre">Sobre</a></li>
             </ul>
-
             <div class="nav-auth">
-                {{ if .Usuario.Id }}
-                <div class="user-menu-container" onclick="toggleDropdown()">
-                    <span style="color: white; font-size: 0.9rem; font-weight: 500; margin-right: 5px;">
-                        Olá, {{ .Usuario.PrimeiroNome }}
-                    </span> {{ if .Usuario.FotoPerfil }}
-                    <img src="{{ .Usuario.FotoPerfil }}" class="nav-avatar" alt="Perfil"> {{ else }}
-                    <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .Usuario.NomeCompleto }}"
-                        class="nav-avatar" alt="Perfil"> {{ end }}
-
-                    <i class="ph ph-caret-down" style="color: var(--text-gray); font-size: 0.8rem;"></i>
-
-                    <div class="user-dropdown" id="userDropdown">
-                        {{ if eq .Usuario.TipoUsuario "DEV" }}
-                        <a href="/dev/dashboard" class="dropdown-item">
-                            <i class="ph ph-squares-four"></i> Dashboard
-                        </a>
-                        <a href="/dev/perfil" class="dropdown-item">
-                            <i class="ph ph-user"></i> Meu Perfil
-                        </a>
-                        {{ else if eq .Usuario.TipoUsuario "EMPRESA" }}
-                        <a href="/empresa/dashboard" class="dropdown-item">
-                            <i class="ph ph-buildings"></i> Painel Empresa
-                        </a>
-                        {{ else if eq .Usuario.TipoUsuario "ADMIN" }}
-                        <a href="/admin/dashboard" class="dropdown-item">
-                            <i class="ph ph-shield-check"></i> Admin
-                        </a>
-                        {{ end }}
-
-                        <a href="/logout" class="dropdown-item logout">
-                            <i class="ph ph-sign-out"></i> Sair
-                        </a>
-                    </div>
-                </div>
-
-                {{ else }}
-                <a href="/login" class="btn btn-ghost">Entrar</a>
-                <a href="/cadastro" class="btn btn-primary">Cadastrar</a> {{ end }}
+                <a href="/login" class="btn btn-ghost">Painel Admin</a>
             </div>
         </div>
     </nav>
 
-    <section style="padding-top: 120px; padding-bottom: 60px;">
+    <div style="padding: 100px 0 40px 0;">
         <div class="container">
-
-            <div style="text-align: center; margin-bottom: 50px;">
-                <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 10px;">Vitrine de Inovação</h1>
-                <p style="color: var(--text-gray); max-width: 600px; margin: 0 auto;">
-                    Explore soluções tecnológicas desenvolvidas em Canaã e Parauapebas.
-                </p>
+            <div style="margin-bottom: 40px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Projetos <span
+                        class="text-gradient">Multidisciplinares</span></h1>
+                <p style="color: var(--text-gray); font-size: 1.1rem;">Explore o impacto acadêmico e as soluções
+                    inovadoras desenvolvidas pelos alunos.</p>
             </div>
 
             <form action="/projetos" method="GET" class="filter-bar">
-
-                <div style="flex: 2; min-width: 250px; position: relative;">
-                    <i class="ph ph-magnifying-glass"
-                        style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray);"></i>
-                    <input type="text" name="q" value="{{ .FiltroTermo }}" class="form-input"
-                        placeholder="Buscar projetos..."
-                        style="border-radius: 50px; padding-left: 40px; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                <div style="flex-grow: 1; min-width: 200px;">
+                    <input type="text" name="q" placeholder="Buscar por título ou tema..." class="form-input"
+                        style="width: 100%; border: none; background: rgba(255,255,255,0.05);" value="">
                 </div>
-
-                <div style="flex: 1; min-width: 180px;">
-                    <select name="categoria" class="form-input"
-                        style="border-radius: 50px; cursor: pointer; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
-                        <option value="Todas" style="background-color: #18181b;">Todas as Áreas</option>
-                        <option value="Tecnologia" {{if eq .FiltroCat "Tecnologia" }}selected{{end}}
-                            style="background-color: #18181b;">Tecnologia</option>
-                        <option value="Educação" {{if eq .FiltroCat "Educação" }}selected{{end}}
-                            style="background-color: #18181b;">Educação</option>
-                        <option value="Saúde" {{if eq .FiltroCat "Saúde" }}selected{{end}}
-                            style="background-color: #18181b;">Saúde</option>
-                        <option value="Agronegócio" {{if eq .FiltroCat "Agronegócio" }}selected{{end}}
-                            style="background-color: #18181b;">Agronegócio
-                        </option>
-                        <option value="Outros" {{if eq .FiltroCat "Outros" }}selected{{end}}
-                            style="background-color: #18181b;">Outros</option>
+                <div style="min-width: 150px;">
+                    <select name="curso" class="form-input"
+                        style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
+                        <option value="">Todos os Cursos</option>
+                        <option value="direito">Direito</option>
+                        <option value="nutricao">Nutrição</option>
+                        <option value="ads">Análise de Sistemas</option>
+                        <option value="fisioterapia">Fisioterapia</option>
                     </select>
                 </div>
-
-                <div style="flex: 1; min-width: 180px;">
-                    <select name="cidade" class="form-input"
-                        style="border-radius: 50px; cursor: pointer; width: 100%; background-color: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
-                        <option value="Todas" style="background-color: #18181b;">Todas as Cidades</option>
-                        <option value="Canaã dos Carajás" {{if eq .FiltroCidade "Canaã dos Carajás" }}selected{{end}}
-                            style="background-color: #18181b;">
-                            Canaã dos Carajás</option>
-                        <option value="Parauapebas" {{if eq .FiltroCidade "Parauapebas" }}selected{{end}}
-                            style="background-color: #18181b;">Parauapebas
-                        </option>
+                <div style="min-width: 150px;">
+                    <select name="status" class="form-input"
+                        style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
+                        <option value="">Qualquer Status</option>
+                        <option value="Concluido">Concluído</option>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Planejado">Planejado</option>
                     </select>
                 </div>
-
-                <div>
-                    <button type="submit" class="btn btn-primary"
-                        style="border-radius: 50px; height: 100%; min-width: 100px;">
-                        Filtrar
-                    </button>
-                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;"><i
+                        class="ph ph-magnifying-glass"></i> Buscar</button>
             </form>
 
             <div class="talent-grid">
-                {{ if not .Dados }}
-                <div
-                    style="grid-column: 1/-1; text-align: center; padding: 60px; background: rgba(0,0,0,0.4); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
-                    <i class="ph ph-mask-sad"
-                        style="font-size: 3rem; margin-bottom: 15px; display:block; color: var(--text-gray);"></i>
-                    <p style="color: var(--text-gray); margin-bottom: 10px;">Nenhum projeto encontrado com esses
-                        filtros.</p>
-                    <a href="/projetos" style="color: var(--brand-teal); font-weight: 600;">Limpar filtros</a>
-                </div>
-                {{ end }}
-
-                {{ range .Dados }}
+                {{ range .Projetos }}
                 <div class="project-card">
-                    <a href="/projeto/detalhes?id={{ .Id }}" class="card-link-overlay"></a>
+                    {{ if .ImagemCapa }}
+                    <img src="{{ .ImagemCapa }}" alt="Capa" class="project-cover">
+                    {{ else }}
+                    <img src="/static/img/default-capa.png" alt="Capa Padrão" class="project-cover">
+                    {{ end }}
 
-                    <div class="card-image-wrapper">
-                        {{ if .ImagemCapa }}
-                        <img src="{{ .ImagemCapa }}" alt="Capa" class="project-cover"> {{ else }}
-                        <img src="https://picsum.photos/seed/{{ .Titulo }}/400/200" alt="Capa" class="project-cover"> {{
-                        end }}
-                        <div class="category-badge">{{ .Categoria }}</div>
-                    </div>
-
-                    <div class="project-body">
+                    <div class="project-content">
                         <h3 class="project-title">{{ .Titulo }}</h3>
                         <p class="project-desc">{{ .Descricao }}</p>
 
-                        <div class="tech-stack">
-                            {{ range .Tecnologias }}
-                            <span class="tech-badge">{{ . }}</span> {{ end }}
+                        <div class="project-meta">
+                            <span class="course-badge"><i class="ph ph-graduation-cap"></i> {{ if .Curso.NomeCurso }}{{
+                                .Curso.NomeCurso }}{{ else }}Multidisciplinar{{ end }}</span>
+
+                            {{ if eq .StatusProjeto "CONCLUIDO" }}
+                            <span class="status-badge"
+                                style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Concluído</span>
+                            {{ else if eq .StatusProjeto "EM_ANDAMENTO" }}
+                            <span class="status-badge"
+                                style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Em
+                                Andamento</span>
+                            {{ else }}
+                            <span class="status-badge"
+                                style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Planejado</span>
+                            {{ end }}
                         </div>
                     </div>
-
-                    <div class="project-footer">
-                        <div class="leader-info">
-                            {{ if .FotoLider }}
-                            <img src="{{ .FotoLider }}" class="leader-avatar"> {{ else }}
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeLider }}"
-                                class="leader-avatar"> {{ end }}
-                            <span style="font-size: 0.85rem; color: #ccc;">{{ .NomeLider }}</span>
-                        </div>
-
-                        {{ if eq .Status "Concluido" }}
-                        <span class="status-badge"
-                            style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">Concluído</span>
-                        {{ else if eq .Status "Em Andamento" }}
-                        <span class="status-badge"
-                            style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);">Em
-                            Andamento</span> {{ else }}
-                        <span class="status-badge"
-                            style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Planejado</span>
-                        {{ end }}
-                    </div>
-
-                    <a href="/projeto/detalhes?id={{ .Id }}" class="btn-details">
-                        Ver Detalhes <i class="ph ph-arrow-right"></i>
-                    </a>
+                    <a href="/projeto?id={{ .IdProjeto }}" class="btn-details">Ver Documentação completa</a>
                 </div>
                 {{ end }}
             </div>
-        </div>
-    </section>
 
-    <script src="static/js/script.js"></script>
-{{ template "GlobalNotifications" .Usuario }}
+            {{ if not .Projetos }}
+            <div
+                style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                <i class="ph ph-folder-open" style="font-size: 3rem; color: #52525b; margin-bottom: 15px;"></i>
+                <h3 style="color: white; margin-bottom: 10px;">Nenhum projeto encontrado</h3>
+                <p style="color: var(--text-gray);">Tente ajustar os filtros de busca ou volte mais tarde.</p>
+            </div>
+            {{ end }}
+
+        </div>
+    </div>
 </body>
 
 </html>

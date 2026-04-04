@@ -5,208 +5,155 @@ import (
 	"time"
 )
 
-// Usuario representa a tabela 'usuarios' do banco de dados
+// ==========================================
+// 1. GESTÃO DO SISTEMA (QUEM ACESSA O PAINEL)
+// ==========================================
+
+// Usuario representa os Analistas de ADS (Admins)
 type Usuario struct {
-	Id           int
-	NomeCompleto string
-	Email        string
-	SenhaHash    string
-	Nivel        string
-	TipoUsuario  string // 'ADMIN', 'DEV', 'EMPRESA'
-	StatusConta  string // 'ATIVO', 'BANIDO'
-
-	// Campos Gerais
-	Cidade       string
-	Biografia    string
-	FotoPerfil   string
-	DataCadastro time.Time
-
-	// Campos Específicos de Desenvolvedor (DEV)
-	TituloProfissional    string
-	DisponivelParaEquipes bool
-	GithubLink            string
-	LinkedinLink          string
-	PortfolioLink         string
-	Skills                string
-
-	// Campos Específicos de Empresa (EMPRESA)
-	NomeFantasia string
-	SiteEmpresa  string
-	RamoAtuacao  string
-	EstaSalvo    bool
-	IsBanned     bool
+	IdUsuario    int       `json:"id_usuario" db:"id_usuario"`
+	NomeCompleto string    `json:"nome_completo" db:"nome_completo"`
+	Email        string    `json:"email" db:"email"`
+	SenhaHash    string    `json:"-" db:"senha_hash"`
+	IdCursoAnalista *int      `json:"id_curso_analista" db:"id_curso_analista"`
+	DataCadastro time.Time `json:"data_cadastro" db:"data_cadastro"`
 }
 
-// structs/types.go
-
-// PrimeiroNome retorna apenas a primeira palavra do NomeCompleto
 func (u Usuario) PrimeiroNome() string {
 	if u.NomeCompleto == "" {
 		return ""
 	}
-	// Separa por espaço e pega o primeiro item
 	return strings.Split(u.NomeCompleto, " ")[0]
 }
 
-func (u Usuario) SkillsComoLista() []string {
-	if u.Skills == "" {
-		return []string{}
-	}
-	// Separa por vírgula
-	listaBruta := strings.Split(u.Skills, ",")
-
-	var listaLimpa []string
-	for _, item := range listaBruta {
-		// Remove espaços extras (ex: " Java" vira "Java")
-		s := strings.TrimSpace(item)
-		if s != "" {
-			listaLimpa = append(listaLimpa, s)
-		}
-	}
-	return listaLimpa
+type RecuperacaoSenha struct {
+	Id        int       `db:"id"`
+	Email     string    `db:"email"`
+	Codigo    string    `db:"codigo"`
+	Expiracao time.Time `db:"expiracao"`
+	Usado     bool      `db:"usado"`
+	CriadoEm  time.Time `db:"criado_em"`
 }
 
-// Projeto representa a tabela 'projetos'
+// ==========================================
+// 2. DOMÍNIOS
+// ==========================================
+
+type Curso struct {
+	IdCurso   int    `json:"id_curso" db:"id_curso"`
+	NomeCurso string `json:"nome_curso" db:"nome_curso"`
+	AreaCurso string `json:"area_curso" db:"area_curso"`
+}
+
+type Area struct {
+	IdArea   int    `json:"id_area" db:"id_area"`
+	NomeArea string `json:"nome_area" db:"nome_area"`
+}
+
+// Habilidade substitui a antiga struct 'Tecnologia'
+type Habilidade struct {
+	IdHabilidade int    `json:"id_habilidade" db:"id_habilidade"`
+	NomeHab      string `json:"nome_hab" db:"nome_hab"`
+	TipoHab      string `json:"tipo_hab" db:"tipo_hab"` // 'TECNICA' ou 'COMPORTAMENTAL'
+}
+
+// ==========================================
+// 3. VITRINE DE TALENTOS (ALUNOS)
+// ==========================================
+
+type Aluno struct {
+	IdAluno       int       `json:"id_aluno" db:"id_aluno"`
+	NomeCompleto  string    `json:"nome_completo" db:"nome_completo"`
+	IdCurso       *int      `json:"id_curso" db:"id_curso"`
+	SemestreAtual *int      `json:"semestre_atual" db:"semestre_atual"`
+	Biografia     string    `json:"biografia" db:"biografia"`
+	FotoPerfil    string    `json:"foto_perfil" db:"foto_perfil"`
+	EmailContato  string    `json:"email_contato" db:"email_contato"`
+	LinkedinLink  string    `json:"linkedin_link" db:"linkedin_link"`
+	GithubLink    string    `json:"github_link" db:"github_link"`
+	PortfolioLink string    `json:"portfolio_link" db:"portfolio_link"`
+	CadastradoPor *int      `json:"cadastrado_por" db:"cadastrado_por"` // Qual Admin cadastrou
+	DataCadastro  time.Time `json:"data_cadastro" db:"data_cadastro"`
+
+	// Relacionamentos para facilitar no Front-end
+	Curso       Curso        `json:"curso"`
+	Habilidades []Habilidade `json:"habilidades"`
+}
+
+func (a Aluno) PrimeiroNome() string {
+	if a.NomeCompleto == "" {
+		return ""
+	}
+	return strings.Split(a.NomeCompleto, " ")[0]
+}
+
+// ==========================================
+// 4. VITRINE DE PROJETOS MULTIDISCIPLINARES
+// ==========================================
+
 type Projeto struct {
-	Id            int
-	Titulo        string
-	Descricao     string
-	Status        string // 'Planejado', 'Em Andamento', 'Concluido'
-	Cidade        string // Mapeia para 'cidade_projeto'
-	Categoria     string // Mapeia para 'categoria' (NOVO)
-	ImagemCapa    string
-	LinkRepo      string
-	Tags          string
-	Visualizacoes int
-	IdLider       int
+	IdProjeto           int       `json:"id_projeto" db:"id_projeto"`
+	Titulo              string    `json:"titulo" db:"titulo"`
+	Descricao           string    `json:"descricao" db:"descricao"`
+	IdCurso             *int      `json:"id_curso" db:"id_curso"`
+	IdArea              *int      `json:"id_area" db:"id_area"`
+	SemestreLetivo      string    `json:"semestre_letivo" db:"semestre_letivo"`
+	ProfessorOrientador string    `json:"professor_orientador" db:"professor_orientador"`
+	StatusProjeto       string    `json:"status_projeto" db:"status_projeto"`
+	ImagemCapa          string    `json:"imagem_capa" db:"imagem_capa"`
+	LinkRepositorio     string    `json:"link_repositorio" db:"link_repositorio"`
+	CadastradoPor       *int      `json:"cadastrado_por" db:"cadastrado_por"`
+	DataCriacao         time.Time `json:"data_criacao" db:"data_criacao"`
+	DataAtualizacao     time.Time `json:"data_atualizacao" db:"data_atualizacao"`
 
-	ImagensGaleria []ImagemGaleria
-	Tecnologias    []string
+	// Relacionamentos populados nas queries
+	Area       Area             `json:"area"`
+	Curso      Curso            `json:"curso"`
+	Equipe     []Aluno          `json:"equipe"` // Usado com JOIN na tabela projeto_alunos
+	Arquivos   []ProjetoArquivo `json:"arquivos"`
+	Links      []ProjetoLink    `json:"links"`
+	Imagens    []ProjetoImagem  `json:"imagens"`
+	Avaliacoes []Avaliacao      `json:"avaliacoes"`
 
-	NomeLider string
-	FotoLider string
-	Equipe    []MembroEquipe
-	EstaSalvo bool
-
-	MediaEstrelas   float64
-	TotalAvaliacoes int
+	// Campos Auxiliares para o Front-end
+	MediaEstrelas   float64 `json:"media_estrelas"`
+	TotalAvaliacoes int     `json:"total_avaliacoes"`
 }
 
-// MembroEquipe representa uma linha da tabela equipe_projeto + dados do usuario
-type MembroEquipe struct {
-	IdUsuario   int
-	Nome        string
-	Foto        string
-	Funcao      string // O cargo (ex: "Frontend Dev")
-	DataEntrada time.Time
+type ProjetoArquivo struct {
+	IdArquivo      int       `json:"id_arquivo" db:"id_arquivo"`
+	IdProjeto      int       `json:"id_projeto" db:"id_projeto"`
+	NomeOriginal   string    `json:"nome_original" db:"nome_original"`
+	CaminhoArquivo string    `json:"caminho_arquivo" db:"caminho_arquivo"`
+	DataUpload     time.Time `json:"data_upload" db:"data_upload"`
 }
 
-// Helper para tags (já existente)
-func (p Projeto) TagsComoLista() []string {
-	if p.Tags == "" {
-		return []string{}
-	}
-	listaBruta := strings.Split(p.Tags, ",")
-	var listaLimpa []string
-	for _, item := range listaBruta {
-		s := strings.TrimSpace(item)
-		if s != "" {
-			listaLimpa = append(listaLimpa, s)
-		}
-	}
-	return listaLimpa
+type ProjetoLink struct {
+	IdLink    int    `json:"id_link" db:"id_link"`
+	IdProjeto int    `json:"id_projeto" db:"id_projeto"`
+	TipoLink  string `json:"tipo_link" db:"tipo_link"` // 'YOUTUBE', 'FORMS', 'PUBLICACAO', 'OUTRO'
+	Url       string `json:"url" db:"url"`
+	Descricao string `json:"descricao" db:"descricao"`
 }
 
-type DashboardStats struct {
-	TotalProjetos      int
-	TotalVisualizacoes int
-	MensagensNaoLidas  int // Vamos deixar 0 por enquanto
+type ProjetoImagem struct {
+	IdImagem      int       `json:"id_imagem" db:"id_imagem"`
+	IdProjeto     int       `json:"id_projeto" db:"id_projeto"`
+	CaminhoImagem string    `json:"caminho_imagem" db:"caminho_imagem"`
+	Ordem         int       `json:"ordem" db:"ordem"`
+	DataUpload    time.Time `json:"data_upload" db:"data_upload"`
 }
 
-type ImagemGaleria struct {
-	Id      int    // ID na tabela projeto_imagens
-	Caminho string // O caminho /static/uploads/...
-}
+// ==========================================
+// 5. INTERAÇÃO PÚBLICA
+// ==========================================
 
-type Tecnologia struct {
-	Id   int
-	Nome string
-}
-
-type AdminDashboardData struct {
-	Usuario Usuario
-	TotalDevs     int
-	TotalEmpresas int
-	TotalProjetos int
-	TotalBanidos  int
-
-	// Para os Gráficos
-	ChartMeses      []string // Ex: ["Jan", "Fev"]
-	ChartNovosUsers []int    // Ex: [10, 20]
-	NaoLidas        int
-}
-
-type ProjetoAdmin struct {
-	Id        int
-	Titulo    string
-	DonoNome  string // Nome do usuário dono
-	Categoria string
-	Status    string // "Concluido", "Em Andamento", "Oculto"
-}
-
-type Mensagem struct {
-	Id             int       // No banco: id_mensagem
-	RemetenteId    int       // No banco: id_remetente
-	DestinatarioId *int      // No banco: id_destinatario
-	ProjetoId      *int       
-	Conteudo       string    // No banco: mensagem
-	DataEnvio      time.Time // No banco: data_envio
-	Lido           bool      // No banco: lida
-
-	// Campos auxiliares para o Front-end
-	EhMinha       bool
-	HoraFormatada string
-	NomeRemetente  string
-	FotoRemetente  string
-}
-
-type ContatoChat struct {
-	UsuarioId      int
-	Nome           string
-	Avatar         string
-	UltimaMensagem string
-	DataUltima     time.Time
-	Ativo          bool
-	NaoLidas       int
-	TipoUsuario    string
-}
-
-// Representa um chat de grupo (Projeto) na barra lateral
-type GrupoChat struct {
-    ProjetoId      int
-    NomeProjeto    string
-    CapaProjeto    string // Imagem do projeto
-    UltimaMensagem string
-    NaoLidas       int
-}
-
-type DadosChat struct {
-	UsuarioLogado      Usuario
-	Contatos           []ContatoChat
-	Grupos             []GrupoChat
-	ConversaAtual      []Mensagem
-	Destinatario       Usuario
-	ChatAberto         bool // Se tem alguém selecionado
-	DestinatarioBanido bool
-
-	IsGrupo            bool
-	ProjetoAtual       Projeto
-}
-
-// Estrutura para enviar dados via Socket
-type NotificacaoMensagem struct {
-	Tipo          string `json:"tipo"` // ex: "nova_mensagem"
-	Conteudo      string `json:"conteudo"`
-	RemetenteID   int    `json:"remetente_id"`
-	HoraFormatada string `json:"hora"`
+type Avaliacao struct {
+	IdAvaliacao    int       `json:"id_avaliacao" db:"id_avaliacao"`
+	IdProjeto      int       `json:"id_projeto" db:"id_projeto"`
+	NomeAvaliador  string    `json:"nome_avaliador" db:"nome_avaliador"`
+	EmailAvaliador string    `json:"email_avaliador" db:"email_avaliador"`
+	Nota           int       `json:"nota" db:"nota"`
+	Comentario     string    `json:"comentario" db:"comentario"`
+	DataAvaliacao  time.Time `json:"data_avaliacao" db:"data_avaliacao"`
 }

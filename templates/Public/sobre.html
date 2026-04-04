@@ -6,89 +6,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Sobre o Criador - NexHub</title>
+    <title>Sobre a Plataforma - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <style>
-        /* --- ESTILOS ESPECÍFICOS PARA A PÁGINA SOBRE --- */
-
-        /* Container principal flexível */
-        .about-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 60px;
-            max-width: 1100px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 10;
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
         }
 
-        /* Wrapper da imagem */
-        .about-image-wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            max-width: 400px;
-            /* Limite de tamanho no desktop */
+        .talent-card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
         }
 
-        /* A foto em si */
-        .profile-photo {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            /* Mantém quadrada */
+        .talent-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-teal);
+        }
+
+        .analyst-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            border: 3px solid #27272a;
+            background: rgba(255, 255, 255, 0.05);
             object-fit: cover;
-            border-radius: 20px;
-            border: 2px solid var(--brand-teal);
-            box-shadow: 0 0 30px rgba(0, 255, 209, 0.2);
-            transition: transform 0.3s ease;
         }
 
-        .profile-photo:hover {
-            transform: scale(1.02);
-        }
-
-        /* Área de texto */
-        .about-content {
-            flex: 1.2;
-            color: white;
-        }
-
-        /* --- RESPONSIVIDADE (MOBILE E TABLET) --- */
-        @media (max-width: 960px) {
-            .about-container {
-                flex-direction: column;
-                /* Empilha um embaixo do outro */
-                text-align: center;
-                /* Centraliza o texto */
-                gap: 30px;
-            }
-
-            .about-image-wrapper {
-                width: 100%;
-                max-width: 280px;
-                /* Foto menor no mobile */
-                margin: 0 auto;
-            }
-
-            .about-content h1 {
-                font-size: 2.2rem !important;
-                /* Título menor */
-            }
-
-            /* Ajuste da grid de redes sociais para centralizar no mobile */
-            .social-grid {
-                justify-content: center;
-            }
+        .course-tag {
+            display: inline-block;
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--brand-teal);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
-
     <div class="supernova-container">
         <div class="orb orb-blue"></div>
         <div class="orb orb-orange"></div>
@@ -104,114 +71,64 @@
                 <li><a href="/">Início</a></li>
                 <li><a href="/projetos">Projetos</a></li>
                 <li><a href="/talentos">Talentos</a></li>
-                <li><a href="/sobre" style="color: white;">Sobre</a></li>
+                <li><a href="/sobre" class="active">Sobre</a></li>
             </ul>
             <div class="nav-auth">
-                {{ if .Usuario.Id }}
-                <div class="user-menu-container" onclick="toggleDropdown()">
-                    <span style="color: white; font-size: 0.9rem; font-weight: 500; margin-right: 5px;">
-                        Olá, {{ .Usuario.PrimeiroNome }}
-                    </span> {{ if .Usuario.FotoPerfil }}
-                    <img src="{{ .Usuario.FotoPerfil }}" class="nav-avatar" alt="Perfil"> {{ else }}
-                    <img src="https://api.dicebear.com/7.x/initials/svg?seed={{ .Usuario.NomeCompleto }}"
-                        class="nav-avatar" alt="Perfil"> {{ end }}
-
-                    <i class="ph ph-caret-down" style="color: var(--text-gray); font-size: 0.8rem;"></i>
-
-                    <div class="user-dropdown" id="userDropdown">
-                        {{ if eq .Usuario.TipoUsuario "DEV" }}
-                        <a href="/dev/dashboard" class="dropdown-item">
-                            <i class="ph ph-squares-four"></i> Dashboard
-                        </a>
-                        <a href="/dev/perfil" class="dropdown-item">
-                            <i class="ph ph-user"></i> Meu Perfil
-                        </a>
-                        {{ else if eq .Usuario.TipoUsuario "EMPRESA" }}
-                        <a href="/empresa/dashboard" class="dropdown-item">
-                            <i class="ph ph-buildings"></i> Painel Empresa
-                        </a>
-                        {{ else if eq .Usuario.TipoUsuario "ADMIN" }}
-                        <a href="/admin/dashboard" class="dropdown-item">
-                            <i class="ph ph-shield-check"></i> Admin
-                        </a>
-                        {{ end }}
-
-                        <a href="/logout" class="dropdown-item logout">
-                            <i class="ph ph-sign-out"></i> Sair
-                        </a>
-                    </div>
-                </div>
-
-                {{ else }}
-                <a href="/login" class="btn btn-ghost">Entrar</a>
-                <a href="/cadastro" class="btn btn-primary">Cadastrar</a> {{ end }}
+                <a href="/login" class="btn btn-ghost">Painel Admin</a>
             </div>
         </div>
     </nav>
 
-    <section style="min-height: 100vh; display: flex; align-items: center; padding-top: 100px; padding-bottom: 40px;">
-        <div class="container">
+    <div class="container" style="padding-top: 120px; padding-bottom: 80px;">
 
-            <div class="about-container">
-
-                <div class="about-image-wrapper">
-                    <img src="static/img/Samuel/Samuel.jpeg" alt="Samuel Lucas" class="profile-photo">
-                </div>
-
-                <div class="about-content">
-                    <span
-                        style="color: var(--brand-teal); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 0.9rem;">O
-                        Desenvolvedor</span>
-                    <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 15px; line-height: 1.1;">Samuel Lucas
-                    </h1>
-
-                    <p style="color: var(--text-gray); font-size: 1.1rem; margin-bottom: 20px;">
-                        Desenvolvedor Fullstack apaixonado por resolver problemas reais através da tecnologia. Com
-                        experiência em <strong>Golang, PowerApps, Sharepoint, PowerBi, PowerAutomate e
-                            PostgreSQL</strong>, busco criar sistemas que impactam a
-                        comunidade local.
-                    </p>
-
-                    <div class="highlight-box">
-                        <h3 style="color: white; font-size: 1.3rem; margin-bottom: 10px;">💡 O Incentivo</h3>
-                        <p style="color: #d4d4d8; font-size: 1rem; line-height: 1.6;">
-                            A ideia do <strong>NexHub</strong> nasceu durante meu estágio, onde desenvolvi um sistema
-                            chamado <em>Gestão de Projetos Corredor Norte</em>, Sistema esse que seria uma central com
-                            todos os projetos da Empresa, onde poderia
-                            fazer validação entre niveis de usuarios diferentes.
-                            <br><br> Percebi que, assim como no meu trabalho, muitos talentos e projetos em Canaã e
-                            Parauapebas ficavam "invisíveis" por falta de uma vitrine centralizada. O NexHub é a
-                            resposta para conectar essa inovação técnica às empresas
-                            que precisam dela.
-                        </p>
-                    </div>
-
-                    <div>
-                        <p style="color: white; font-weight: 600; margin-bottom: 10px;">Vamos nos conectar:</p>
-                        <div class="social-grid" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <a href="/chat?id=5" class="social-btn btn-chat-nexhub">
-                                <i class="ph-bold ph-chat-circle-text" style="font-size: 1.2rem;"></i> Falar no NexHub
-                            </a>
-                            <a href="https://github.com/SamucaLucas" target="_blank" class="social-btn">
-                                <i class="ph ph-github-logo" style="font-size: 1.2rem;"></i> GitHub
-                            </a>
-                            <a href="https://linkedin.com/in/samuel-lucas-da-conceição-setúbal-6ba7a4367/"
-                                target="_blank" class="social-btn">
-                                <i class="ph ph-linkedin-logo" style="font-size: 1.2rem;"></i> LinkedIn
-                            </a>
-                            <a href="https://instagram.com/samu_calucas" target="_blank" class="social-btn">
-                                <i class="ph ph-instagram-logo" style="font-size: 1.2rem;"></i> Instagram
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 20px;">Conheça a <span style="color: var(--brand-teal);">Equipe
+                    NexHub</span></h1>
+            <p style="color: var(--text-gray); font-size: 1.1rem; max-width: 800px; margin: 0 auto; line-height: 1.7;">
+                A Plataforma Institucional de Projetos da Unifadesa é desenvolvida e gerenciada com orgulho pelos alunos
+                da turma de <strong>Análise e Desenvolvimento de Sistemas (ADS)</strong>.
+                <br><br>
+                Precisa de ajuda para publicar o projeto do seu curso? Encontre o Analista responsável pela sua área na
+                galeria abaixo e entre em contato!
+            </p>
         </div>
-    </section>
-    <script src="static/js/script.js"></script>
-{{ template "GlobalNotifications" .Usuario }}
+
+        <div class="talent-grid">
+            {{ range .Analistas }}
+            <div class="talent-card">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeCompleto }}" alt="Avatar"
+                    class="analyst-avatar">
+
+                <h3 style="font-size: 1.25rem; color: white; margin-bottom: 8px;">{{ .NomeCompleto }}</h3>
+
+                <div>
+                    <span class="course-tag">
+                        <i class="ph ph-target"></i> Atende: {{ .CursoResponsavel }}
+                    </span>
+                </div>
+
+                <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 20px;">
+                    <i class="ph ph-student" style="color: var(--brand-orange);"></i> Estudante de Análise de Sistemas
+                </p>
+
+                <a href="mailto:{{ .Email }}" class="btn btn-ghost"
+                    style="width: 100%; border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    <i class="ph ph-envelope-simple" style="margin-right: 5px;"></i> Solicitar Suporte
+                </a>
+            </div>
+            {{ end }}
+        </div>
+
+        {{ if not .Analistas }}
+        <div
+            style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+            <i class="ph ph-users-three" style="font-size: 3rem; color: #52525b; margin-bottom: 15px;"></i>
+            <h3 style="color: white; margin-bottom: 10px;">Nenhum Analista Cadastrado</h3>
+            <p style="color: var(--text-gray);">Os administradores da plataforma aparecerão aqui em breve.</p>
+        </div>
+        {{ end }}
+
+    </div>
 </body>
 
 </html>
