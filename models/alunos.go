@@ -24,7 +24,7 @@ func CriarAluno(a structs.Aluno) (int, error) {
 	return idGerado, err
 }
 
-// BuscarAlunoPorID traz os detalhes completos de um aluno específico para a página de perfil público
+// BuscarAlunoPorId traz os detalhes completos de um aluno específico para edição e perfil público
 func BuscarAlunoPorID(id int) (structs.Aluno, error) {
 	query := `
 		SELECT 
@@ -32,7 +32,7 @@ func BuscarAlunoPorID(id int) (structs.Aluno, error) {
 			COALESCE(a.biografia, ''), COALESCE(a.foto_perfil, ''), 
 			COALESCE(a.email_contato, ''), COALESCE(a.linkedin_link, ''), 
 			COALESCE(a.github_link, ''), COALESCE(a.portfolio_link, ''),
-			c.nome_curso
+			COALESCE(c.nome_curso, '')
 		FROM alunos a
 		LEFT JOIN cursos c ON a.id_curso = c.id_curso
 		WHERE a.id_aluno = $1`
@@ -46,21 +46,20 @@ func BuscarAlunoPorID(id int) (structs.Aluno, error) {
 		&a.GithubLink, &a.PortfolioLink, &nomeCurso,
 	)
 
-	// Se não deu erro e achou o curso, preenche a struct aninhada
+	// Se não deu erro, preenche a struct aninhada do curso
 	if err == nil {
 		a.Curso = structs.Curso{NomeCurso: nomeCurso}
-		// OBS: Se quisermos exibir as habilidades dele aqui depois, faremos outra query na tabela aluno_habilidades
 	}
 
 	return a, err
 }
 
-// ListarAlunos traz um resumo de todos os alunos para a página "Talentos" (Visitantes)
+// ListarAlunos traz um resumo de todos os alunos para a página "Talentos" e tabelas administrativas
 func ListarAlunos() ([]structs.Aluno, error) {
 	query := `
 		SELECT 
 			a.id_aluno, a.nome_completo, a.id_curso, a.semestre_atual, 
-			COALESCE(a.foto_perfil, ''), COALESCE(a.biografia, ''), c.nome_curso
+			COALESCE(a.foto_perfil, ''), COALESCE(a.biografia, ''), COALESCE(c.nome_curso, '')
 		FROM alunos a
 		LEFT JOIN cursos c ON a.id_curso = c.id_curso
 		ORDER BY a.id_aluno DESC`
@@ -90,19 +89,26 @@ func ListarAlunos() ([]structs.Aluno, error) {
 	return alunos, nil
 }
 
-// AtualizarAluno modifica os dados do aluno (ação executada pelo Admin)
+// AtualizarAluno modifica APENAS OS DADOS TEXTUAIS do aluno
 func AtualizarAluno(a structs.Aluno) error {
 	query := `
 		UPDATE alunos 
 		SET nome_completo=$1, id_curso=$2, semestre_atual=$3, biografia=$4, 
-			foto_perfil=$5, email_contato=$6, linkedin_link=$7, github_link=$8, portfolio_link=$9
-		WHERE id_aluno=$10`
+		    email_contato=$5, linkedin_link=$6, github_link=$7, portfolio_link=$8
+		WHERE id_aluno=$9`
 
 	_, err := db.DB.Exec(query,
 		a.NomeCompleto, a.IdCurso, a.SemestreAtual, a.Biografia,
-		a.FotoPerfil, a.EmailContato, a.LinkedinLink, a.GithubLink, a.PortfolioLink,
+		a.EmailContato, a.LinkedinLink, a.GithubLink, a.PortfolioLink,
 		a.IdAluno,
 	)
+	return err
+}
+
+// AtualizarFotoAluno salva o caminho da nova imagem separadamente
+func AtualizarFotoAluno(idAluno int, caminhoFoto string) error {
+	query := `UPDATE alunos SET foto_perfil=$1 WHERE id_aluno=$2`
+	_, err := db.DB.Exec(query, caminhoFoto, idAluno)
 	return err
 }
 

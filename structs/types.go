@@ -115,6 +115,7 @@ type Projeto struct {
 	Links      []ProjetoLink    `json:"links"`
 	Imagens    []ProjetoImagem  `json:"imagens"`
 	Avaliacoes []Avaliacao      `json:"avaliacoes"`
+	
 
 	// Campos Auxiliares para o Front-end
 	MediaEstrelas   float64 `json:"media_estrelas"`
@@ -150,11 +151,11 @@ type ProjetoImagem struct {
 // ==========================================
 
 type Avaliacao struct {
-	IdAvaliacao    int       `json:"id_avaliacao" db:"id_avaliacao"`
-	IdProjeto      int       `json:"id_projeto" db:"id_projeto"`
-	NomeAvaliador  string    `json:"nome_avaliador" db:"nome_avaliador"`
-	EmailAvaliador string    `json:"email_avaliador" db:"email_avaliador"`
-	Nota           int       `json:"nota" db:"nota"`
-	Comentario     string    `json:"comentario" db:"comentario"`
-	DataAvaliacao  time.Time `json:"data_avaliacao" db:"data_avaliacao"`
+	IdAvaliacao   int
+	IdProjeto     int
+	NomeAvaliador string
+	Email         string
+	Nota          int
+	Comentario    string
+	DataFormatada string // <-- Adicione isso para mostrarmos a data na tela
 }

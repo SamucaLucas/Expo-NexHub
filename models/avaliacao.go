@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"nexhub/db"
+	"nexhub/structs"
 
 	// Importando a biblioteca do AfterShip
 	verifier "github.com/AfterShip/email-verifier"
@@ -14,14 +15,6 @@ var (
 		EnableSMTPCheck().    // Verifica se o usuário existe no servidor (SMTP)
 		EnableDomainSuggest() // Sugere correções (ex: gmil.com -> gmail.com)
 )
-
-type Avaliacao struct {
-	IdProjeto     int
-	NomeAvaliador string
-	Email         string
-	Nota          int
-	Comentario    string
-}
 
 // NOVA VALIDAÇÃO RIGOROSA (USANDO AFTERSHIP)
 func ValidarEmailRigoroso(email string) (string, error) {
@@ -57,7 +50,7 @@ func ValidarEmailRigoroso(email string) (string, error) {
 	return ret.Suggestion, nil
 }
 
-func BuscarAvaliacoesDoProjeto(idProjeto int) ([]Avaliacao, error) {
+func BuscarAvaliacoesDoProjeto(idProjeto int) ([]structs.Avaliacao, error) {
 	// Query: Busca e-mail, nota e comentário
 	// Ajuste "avaliacoes" para o nome real da sua tabela se for diferente
 	query := `
@@ -72,9 +65,9 @@ func BuscarAvaliacoesDoProjeto(idProjeto int) ([]Avaliacao, error) {
 	}
 	defer rows.Close()
 
-	var lista []Avaliacao
+	var lista []structs.Avaliacao
 	for rows.Next() {
-		var a Avaliacao
+		var a structs.Avaliacao
 		// O Scan deve bater com a struct e a ordem do SELECT
 		if err := rows.Scan(&a.Email, &a.Nota, &a.Comentario, &a.NomeAvaliador); err != nil {
 			continue
@@ -85,7 +78,7 @@ func BuscarAvaliacoesDoProjeto(idProjeto int) ([]Avaliacao, error) {
 }
 
 // 2. FUNÇÃO SALVAR (Mantenha simples para o controller tratar o erro)
-func SalvarAvaliacao(a Avaliacao) error {
+func SalvarAvaliacao(a structs.Avaliacao) error {
 	tx, err := db.DB.Begin()
 	if err != nil {
 		return err

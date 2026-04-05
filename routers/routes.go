@@ -24,8 +24,10 @@ func CarregarRotas() {
 	http.HandleFunc("/projetos", controllers.ProjetosHandler)
 	http.HandleFunc("/projeto", controllers.DetalheProjetoHandler) // ex: /projeto?id=10
 
-	// Interação do Visitante
-	http.HandleFunc("/avaliar/salvar", controllers.SalvarAvaliacaoHandler)
+
+	// Área Pública
+	http.HandleFunc("/projeto/avaliar", controllers.SalvarAvaliacaoHandler)
+	http.HandleFunc("/api/validar-email", controllers.ValidarEmailAPIHandler)
 
 	// ==========================================
 	// 3. AUTENTICAÇÃO (Admins / ADS)
@@ -48,22 +50,27 @@ func CarregarRotas() {
 	http.HandleFunc("/admin/alunos/salvar", controllers.AdminSalvarAlunoHandler)
 	http.HandleFunc("/admin/alunos/excluir", controllers.AdminExcluirAlunoHandler)
 
+	// Gestão de Alunos/Talentos
+	http.HandleFunc("/admin/alunos/editar", controllers.AdminEditarAlunoHandler)
+	http.HandleFunc("/admin/alunos/atualizar", controllers.AdminAtualizarAlunoHandler)
+
 	// Gestão de Projetos
 	http.HandleFunc("/admin/projetos", controllers.AdminProjetosHandler)
 	http.HandleFunc("/admin/projetos/salvar", controllers.AdminSalvarProjetoHandler)
 	http.HandleFunc("/admin/projetos/status", controllers.AdminAlterarStatusProjetoHandler)
 	http.HandleFunc("/admin/projetos/excluir", controllers.AdminExcluirProjetoHandler)
 	http.HandleFunc("/admin/projetos/editar", controllers.AdminEditarProjetoHandler)
+	
 
 	// Ações da Tela de Edição de Projetos
 	http.HandleFunc("/admin/projetos/atualizar", controllers.AdminAtualizarProjetoHandler)
-	
+
 	http.HandleFunc("/admin/projetos/equipe/adicionar", controllers.AdminProjetoAdicionarEquipeHandler)
 	http.HandleFunc("/admin/projetos/equipe/remover", controllers.AdminProjetoRemoverEquipeHandler)
-	
+
 	http.HandleFunc("/admin/projetos/links/adicionar", controllers.AdminProjetoAdicionarLinkHandler)
 	http.HandleFunc("/admin/projetos/links/remover", controllers.AdminProjetoRemoverLinkHandler)
-	
+
 	http.HandleFunc("/admin/projetos/arquivos/upload", controllers.AdminProjetoUploadArquivoHandler)
 	http.HandleFunc("/admin/projetos/arquivos/remover", controllers.AdminProjetoRemoverArquivoHandler)
 

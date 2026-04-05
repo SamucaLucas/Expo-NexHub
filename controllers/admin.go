@@ -590,3 +590,107 @@ func AdminExcluirAnalistaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/admin/analistas", http.StatusSeeOther)
 }
+
+// --- TELA DE EDITAR ALUNO ---
+func AdminEditarAlunoHandler(w http.ResponseWriter, r *http.Request) {
+	user := GetUserFromSession(r)
+	if user.IdUsuario == 0 {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	idAluno, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	aluno, err := models.BuscarAlunoPorID(idAluno)
+	if err != nil {
+		http.Redirect(w, r, "/admin/alunos", http.StatusSeeOther)
+		return
+	}
+
+	cursos, _ := models.ListarTodosCursos()
+
+	// Tratando os ponteiros para o HTML não quebrar
+	alunoIdCurso := 0
+	if aluno.IdCurso != nil {
+		alunoIdCurso = *aluno.IdCurso
+	}
+	alunoSemestre := 0
+	if aluno.SemestreAtual != nil {
+		alunoSemestre = *aluno.SemestreAtual
+	}
+
+	dados := struct {
+		Usuario       structs.Usuario
+		Aluno         structs.Aluno
+		Cursos        []structs.Curso
+		AlunoIdCurso  int
+		AlunoSemestre int
+	}{
+		Usuario:       user,
+		Aluno:         aluno,
+		Cursos:        cursos,
+		AlunoIdCurso:  alunoIdCurso,
+		AlunoSemestre: alunoSemestre,
+	}
+
+	temp.ExecuteTemplate(w, "AdminAlunoEdit", dados)
+}
+
+// --- SALVAR EDIÇÃO DO ALUNO ---
+func AdminAtualizarAlunoHandler(w http.ResponseWriter, r *http.Request) {
+	user := GetUserFromSession(r)
+	if user.IdUsuario == 0 {
+		return
+	}
+
+	r.ParseMultipartForm(10 << 20) // Limite 10MB para foto
+
+	idAluno, _ := strconv.Atoi(r.FormValue("id_aluno"))
+	idCurso, _ := strconv.Atoi(r.FormValue("id_curso"))
+	semestre, _ := strconv.Atoi(r.FormValue("semestre_atual"))
+
+	var ptrCurso, ptrSemestre *int
+	if idCurso > 0 {
+		ptrCurso = &idCurso
+	}
+	if semestre > 0 {
+		ptrSemestre = &semestre
+	}
+
+	aluno := structs.Aluno{
+		IdAluno:       idAluno,
+		NomeCompleto:  r.FormValue("nome_completo"),
+		IdCurso:       ptrCurso,
+		SemestreAtual: ptrSemestre,
+		Biografia:     r.FormValue("biografia"),
+		EmailContato:  r.FormValue("email_contato"),
+		LinkedinLink:  r.FormValue("linkedin_link"),
+		GithubLink:    r.FormValue("github_link"),
+		PortfolioLink: r.FormValue("portfolio_link"),
+	}
+
+	// Salva as informações de texto
+	models.AtualizarAluno(aluno)
+
+	// Verifica se enviou uma foto de perfil nova
+	file, handler, err := r.FormFile("foto_perfil")
+	if err == nil {
+		defer file.Close()
+
+		pastaDestino := "static/uploads/alunos"
+		os.MkdirAll(pastaDestino, os.ModePerm)
+
+		nomeArquivo := fmt.Sprintf("aluno_%d_%s", time.Now().Unix(), handler.Filename)
+		caminhoDisco := pastaDestino + "/" + nomeArquivo
+		caminhoBanco := "/" + caminhoDisco
+
+		dst, errCreate := os.Create(caminhoDisco)
+		if errCreate == nil {
+			defer dst.Close()
+			if _, errCopy := io.Copy(dst, file); errCopy == nil {
+				models.AtualizarFotoAluno(idAluno, caminhoBanco)
+			}
+		}
+	}
+
+	http.Redirect(w, r, "/admin/alunos?sucesso=editado", http.StatusSeeOther)
+}

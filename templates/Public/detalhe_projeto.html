@@ -160,14 +160,16 @@
             <div>
                 <div class="section-box">
                     <h2 style="font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                        <i class="ph ph-article" style="color: var(--brand-teal);"></i> Sobre o Projeto</h2>
+                        <i class="ph ph-article" style="color: var(--brand-teal);"></i> Sobre o Projeto
+                    </h2>
                     <p style="color: #d4d4d8; line-height: 1.8; white-space: pre-wrap;">{{ .Projeto.Descricao }}</p>
                 </div>
 
                 {{ if .Projeto.Imagens }}
                 <div class="section-box">
                     <h2 style="font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                        <i class="ph ph-image" style="color: var(--brand-orange);"></i> Galeria</h2>
+                        <i class="ph ph-image" style="color: var(--brand-orange);"></i> Galeria
+                    </h2>
                     <div
                         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                         {{ range .Projeto.Imagens }}
@@ -180,23 +182,96 @@
 
                 <div class="section-box">
                     <h2 style="font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                        <i class="ph ph-chats" style="color: #a855f7;"></i> Comentários</h2>
+                        <i class="ph ph-chats" style="color: #a855f7;"></i> Comentários
+                    </h2>
 
-                    <form action="/avaliar/salvar" method="POST"
-                        style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; border: 1px solid #27272a; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <div
+                            style="background: rgba(255, 153, 0, 0.1); border: 1px solid rgba(255, 153, 0, 0.2); padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; color: var(--brand-orange); font-weight: bold;">
+                            <i class="ph-fill ph-star"></i> {{ printf "%.1f" .Projeto.MediaEstrelas }}
+                        </div>
+                        <span style="color: var(--text-gray); font-size: 0.9rem;">({{ .Projeto.TotalAvaliacoes }}
+                            avaliações)</span>
+                    </div>
+
+                    <form action="/projeto/avaliar" method="POST" id="form-comentario"
+                        style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; border-radius: 12px; padding: 25px;">
                         <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
-                        <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 15px;">Deixe sua opinião
-                            sobre este projeto da Unifadesa.</p>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                            <input type="text" name="nome" placeholder="Seu Nome" class="form-input" required>
-                            <input type="email" name="email" placeholder="Seu E-mail" class="form-input" required>
-                        </div>
-                        <textarea name="comentario" rows="3" placeholder="Escreva seu comentário..." class="form-input"
-                            style="margin-bottom: 15px; resize: vertical;" required></textarea>
+                            <div class="form-group">
+                                <input type="text" name="nome_avaliador" class="form-input" placeholder="Seu Nome"
+                                    required>
+                            </div>
 
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Comentário</button>
+                            <div class="form-group">
+                                <input type="email" id="email" name="email_avaliador" class="form-input"
+                                    placeholder="Seu E-mail" required onblur="verificarEmail(this)">
+                                <small id="email-feedback" class="feedback-msg"></small>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label
+                                style="display: block; color: var(--text-gray); margin-bottom: 8px; font-size: 0.9rem;">Sua
+                                Nota</label>
+                            <input type="hidden" name="nota" id="nota_input" value="5">
+                            <div id="star-rating" style="display: flex; gap: 8px; cursor: pointer; font-size: 1.8rem;">
+                                <i class="ph-fill ph-star star-btn" data-value="1"
+                                    style="color: var(--brand-orange);"></i>
+                                <i class="ph-fill ph-star star-btn" data-value="2"
+                                    style="color: var(--brand-orange);"></i>
+                                <i class="ph-fill ph-star star-btn" data-value="3"
+                                    style="color: var(--brand-orange);"></i>
+                                <i class="ph-fill ph-star star-btn" data-value="4"
+                                    style="color: var(--brand-orange);"></i>
+                                <i class="ph-fill ph-star star-btn" data-value="5"
+                                    style="color: var(--brand-orange);"></i>
+                            </div>
+                        </div>
+
+                        <textarea name="comentario" class="form-input" rows="4" placeholder="Escreva seu comentário..."
+                            required style="margin-bottom: 20px;"></textarea>
+
+                        <button type="submit" id="btn-submit" class="btn btn-primary" style="width: 100%;">
+                            Enviar Comentário
+                        </button>
                     </form>
+
+                    <div style="margin-top: 40px;">
+                        <h3
+                            style="color: white; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #27272a; padding-bottom: 10px;">
+                            Comentários da Comunidade</h3>
+                        {{ if .Projeto.Avaliacoes }}
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            {{ range .Projeto.Avaliacoes }}
+                            <div
+                                style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; border-radius: 12px; padding: 20px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                    <div>
+                                        <strong
+                                            style="color: white; font-size: 1.05rem; display: block; margin-bottom: 5px;">{{
+                                            .NomeAvaliador }}</strong>
+                                        <span
+                                            style="background: rgba(255, 153, 0, 0.1); padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; color: var(--brand-orange); display: flex; align-items: center; gap: 4px;">
+                                            <i class="ph-fill ph-star"></i> {{ .Nota }}/5
+                                        </span>
+                                    </div>
+                                    <span style="color: var(--text-gray); font-size: 0.85rem;">{{ .DataFormatada
+                                        }}</span>
+                                </div>
+                                <p style="color: #d4d4d8; line-height: 1.6; margin-top: 10px; white-space: pre-wrap;">{{
+                                    .Comentario }}</p>
+                            </div>
+                            {{ end }}
+                        </div>
+                        {{ else }}
+                        <div
+                            style="text-align: center; padding: 30px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-gray);">
+                            Nenhum comentário ainda.</div>
+                        {{ end }}
+                    </div>
                 </div>
             </div>
 
@@ -295,7 +370,83 @@
             </div>
         </div>
     </div>
+    <script>
+        // --- FUNÇÕES DE AUXÍLIO ---
+        function traduzirErro(mensagem) {
+            if (mensagem && (mensagem.includes("no such host") || mensagem.includes("lookup"))) {
+                return "Domínio de e-mail inexistente. Verifique a digitação.";
+            }
+            if (mensagem && mensagem.includes("esta conta de e-mail não existe")) {
+                return "Esta conta de e-mail não existe ou está cheia.";
+            }
+            return mensagem;
+        }
+
+        // --- VERIFICAÇÃO DE E-MAIL EM TEMPO REAL ---
+        function verificarEmail(input) {
+            const email = input.value;
+            const feedback = document.getElementById('email-feedback');
+            const btn = document.getElementById('btn-submit');
+
+            if (!email) {
+                feedback.innerText = "";
+                input.style.borderColor = "";
+                return;
+            }
+
+            feedback.innerText = "Verificando e-mail...";
+            feedback.style.color = "var(--text-secondary)";
+            btn.disabled = true;
+
+            // Chama a API que criamos anteriormente
+            fetch(`/api/validar-email?email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.valido) {
+                        feedback.innerText = traduzirErro(data.mensagem);
+                        feedback.style.color = "#ef4444";
+                        input.style.borderColor = "#ef4444";
+                        btn.disabled = true;
+                        btn.style.opacity = "0.5";
+                    } else {
+                        feedback.innerText = "E-mail válido!";
+                        feedback.style.color = "#10b981";
+                        input.style.borderColor = "#10b981";
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    feedback.innerText = "Erro ao verificar e-mail.";
+                    btn.disabled = false; // Permite enviar caso a API falhe
+                });
+        }
+
+        // --- LÓGICA DAS ESTRELAS ---
+        const stars = document.querySelectorAll('.star-btn');
+        const notaInput = document.getElementById('nota_input');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const value = this.getAttribute('data-value');
+                notaInput.value = value;
+                stars.forEach(s => {
+                    const sVal = s.getAttribute('data-value');
+                    if (sVal <= value) {
+                        s.classList.add('ph-fill');
+                        s.style.color = 'var(--brand-orange)';
+                    } else {
+                        s.classList.remove('ph-fill');
+                        s.style.color = '#3f3f46';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
+
+
 
 </html>
 {{ end }}

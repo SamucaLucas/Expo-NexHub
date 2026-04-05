@@ -253,7 +253,7 @@
                         <select name="status_projeto" class="form-input" style="cursor: pointer;">
                             <option value="PLANEJADO" {{ if eq .Projeto.StatusProjeto "PLANEJADO" }}selected{{ end }}>
                                 Planejado</option>
-                            <option value="EM_ANDAMENTO" {{ if eq .Projeto.StatusProjeto "EM_ANDAMENTO" }}selected{{ end
+                            <option value="EM ANDAMENTO" {{ if eq .Projeto.StatusProjeto "EM_ANDAMENTO" }}selected{{ end
                                 }}>Em Andamento</option>
                             <option value="CONCLUIDO" {{ if eq .Projeto.StatusProjeto "CONCLUIDO" }}selected{{ end }}>
                                 Concluído</option>
@@ -322,15 +322,19 @@
                             <button type="submit" class="btn btn-primary">+</button>
                         </div>
                     </form>
+
                     {{ range .Projeto.Links }}
                     <div class="item-list">
-                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%;">
+                        <span
+                            style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px;">
                             <i class="ph ph-globe" style="color: var(--brand-orange);"></i> <strong>{{ .TipoLink
-                                }}:</strong> <a href="{{ .Url }}" target="_blank"
-                                style="color: #a1a1aa; text-decoration: none;">{{ .Url }}</a>
+                                }}:</strong>
+                            <a href="{{ .Url }}" target="_blank" style="color: #a1a1aa; text-decoration: none;">{{ .Url
+                                }}</a>
                         </span>
+
                         <a href="/admin/projetos/links/remover?id_link={{ .IdLink }}&id_projeto={{ $.Projeto.IdProjeto }}"
-                            style="color: #ef4444;"><i class="ph ph-trash"></i></a>
+                            style="color: #ef4444; flex-shrink: 0; padding: 5px;"><i class="ph ph-trash"></i></a>
                     </div>
                     {{ else }}
                     <p style="color: var(--text-gray); font-size: 0.9rem; text-align: center; padding: 10px;">Nenhum

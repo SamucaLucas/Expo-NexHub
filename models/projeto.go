@@ -68,13 +68,14 @@ func DeletarProjeto(id int) error {
 func BuscarDetalhesProjeto(id int) (structs.Projeto, error) {
 	var p structs.Projeto
 
-	// 1. Dados Principais
+	// 1. Dados Principais (AGORA COM AS ESTRELAS E TOTAL DE AVALIAÇÕES)
 	query := `
 		SELECT 
 			p.id_projeto, p.titulo, p.descricao, p.id_curso, p.id_area, 
 			COALESCE(p.semestre_letivo, ''), COALESCE(p.professor_orientador, ''), 
 			p.status_projeto, COALESCE(p.imagem_capa, ''), COALESCE(p.link_repositorio, ''), 
-			p.data_criacao, COALESCE(c.nome_curso, ''), COALESCE(a.nome_area, '')
+			p.data_criacao, COALESCE(c.nome_curso, ''), COALESCE(a.nome_area, ''),
+			COALESCE(p.media_estrelas, 0), COALESCE(p.total_avaliacoes, 0)
 		FROM projetos p
 		LEFT JOIN cursos c ON p.id_curso = c.id_curso
 		LEFT JOIN areas a ON p.id_area = a.id_area
@@ -86,6 +87,7 @@ func BuscarDetalhesProjeto(id int) (structs.Projeto, error) {
 		&p.SemestreLetivo, &p.ProfessorOrientador, &p.StatusProjeto,
 		&p.ImagemCapa, &p.LinkRepositorio, &p.DataCriacao,
 		&nomeCurso, &nomeArea,
+		&p.MediaEstrelas, &p.TotalAvaliacoes, // <--- MAPEANDO OS NOVOS CAMPOS
 	)
 	if err != nil {
 		return p, err
@@ -102,6 +104,24 @@ func BuscarDetalhesProjeto(id int) (structs.Projeto, error) {
 
 	// 4. Buscar Galeria de Imagens
 	p.Imagens, _ = BuscarGaleriaDoProjeto(id)
+
+	// 5. BUSCA AS AVALIAÇÕES/COMENTÁRIOS DO PROJETO PARA A TELA PÚBLICA
+	queryAvaliacoes := `
+		SELECT nome_avaliador, nota, comentario, TO_CHAR(data_avaliacao, 'DD/MM/YYYY') 
+		FROM avaliacoes 
+		WHERE id_projeto = $1 
+		ORDER BY data_avaliacao DESC`
+
+	rowsAv, errAv := db.DB.Query(queryAvaliacoes, id)
+	if errAv == nil { // Só faz o loop se não der erro no banco
+		defer rowsAv.Close()
+		for rowsAv.Next() {
+			var av structs.Avaliacao
+			// Scan tem que bater exatamente com a ordem do SELECT acima
+			rowsAv.Scan(&av.NomeAvaliador, &av.Nota, &av.Comentario, &av.DataFormatada)
+			p.Avaliacoes = append(p.Avaliacoes, av)
+		}
+	}
 
 	return p, nil
 }
@@ -270,7 +290,7 @@ func DeletarImagemGaleria(idImagem int) error {
 func ListarTodosProjetosAdmin() ([]structs.Projeto, error) {
 	query := `
 		SELECT 
-			p.id_projeto, p.titulo, p.status_projeto, 
+			p.id_projeto, p.titulo, p.status_projeto, p.imagem_capa, 
 			COALESCE(c.nome_curso, 'Geral') as nome_curso
 		FROM projetos p
 		LEFT JOIN cursos c ON p.id_curso = c.id_curso
@@ -286,7 +306,7 @@ func ListarTodosProjetosAdmin() ([]structs.Projeto, error) {
 	for rows.Next() {
 		var p structs.Projeto
 		var nomeCurso string
-		if err := rows.Scan(&p.IdProjeto, &p.Titulo, &p.StatusProjeto, &nomeCurso); err == nil {
+		if err := rows.Scan(&p.IdProjeto, &p.Titulo, &p.StatusProjeto, &p.ImagemCapa, &nomeCurso); err == nil {
 			p.Curso = structs.Curso{NomeCurso: nomeCurso}
 			projetos = append(projetos, p)
 		}
@@ -321,7 +341,7 @@ func BuscarProjetoPorId(idProjeto int) (structs.Projeto, error) {
 	query := `
 		SELECT id_projeto, titulo, descricao, id_curso, id_area,
 			   COALESCE(semestre_letivo, ''), COALESCE(professor_orientador, ''),
-			   status_projeto, COALESCE(imagem_capa, ''), COALESCE(link_repositorio, '')
+			   status_projeto, COALESCE(imagem_capa, ''), COALESCE(link_repositorio, ''), media_estrelas, total_avaliacoes
 		FROM projetos
 		WHERE id_projeto = $1`
 
@@ -329,18 +349,28 @@ func BuscarProjetoPorId(idProjeto int) (structs.Projeto, error) {
 	err := row.Scan(
 		&p.IdProjeto, &p.Titulo, &p.Descricao, &p.IdCurso, &p.IdArea,
 		&p.SemestreLetivo, &p.ProfessorOrientador,
-		&p.StatusProjeto, &p.ImagemCapa, &p.LinkRepositorio,
+		&p.StatusProjeto, &p.ImagemCapa, &p.LinkRepositorio, &p.MediaEstrelas, &p.TotalAvaliacoes,
 	)
 
 	if err != nil {
 		return p, err
 	}
 
-	// --------------------------------------------------------
-	// AQUI VAMOS BUSCAR A EQUIPE E OS ARQUIVOS (PRÓXIMO PASSO)
-	// p.Equipe = ...
-	// p.Arquivos = ...
-	// --------------------------------------------------------
+	// 4. Busca as Avaliações/Comentários do Projeto
+	// Usamos TO_CHAR para o PostgreSQL já devolver a data bonitinha (ex: 05/04/2026)
+	queryAvaliacoes := `
+		SELECT nome_avaliador, nota, comentario, TO_CHAR(data_avaliacao, 'DD/MM/YYYY') 
+		FROM avaliacoes 
+		WHERE id_projeto = $1 
+		ORDER BY data_avaliacao DESC`
+
+	rowsAv, _ := db.DB.Query(queryAvaliacoes, idProjeto)
+	for rowsAv.Next() {
+		var av structs.Avaliacao // (ou models.Avaliacao)
+		rowsAv.Scan(&av.NomeAvaliador, &av.Nota, &av.Comentario, &av.DataFormatada)
+		p.Avaliacoes = append(p.Avaliacoes, av)
+	}
+	rowsAv.Close()
 
 	return p, nil
 }
@@ -412,7 +442,6 @@ func RemoverArquivoProjeto(idArquivo int) error {
 	_, err := db.DB.Exec(`DELETE FROM projeto_arquivos WHERE id_arquivo = $1`, idArquivo)
 	return err
 }
-
 
 func RemoverLinkProjeto(idLink int) error {
 	_, err := db.DB.Exec("DELETE FROM projeto_links WHERE id_link = $1", idLink)

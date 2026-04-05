@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"nexhub/models"
@@ -68,19 +70,16 @@ func DetalheProjetoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Busca todos os dados do projeto (arquivos, links, equipe e galeria)
+	// 1. Busca todos os dados do projeto (arquivos, links, equipe, galeria E AVALIAÇÕES)
 	projeto, err := models.BuscarDetalhesProjeto(id)
 	if err != nil {
 		http.Redirect(w, r, "/projetos", http.StatusSeeOther)
 		return
 	}
 
-	// 2. Buscar avaliações/comentários de visitantes (se você for reimplementar o models.Avaliacao)
-	// avaliacoes, _ := models.BuscarAvaliacoesDoProjeto(id)
-
+	// 2. Monta a caixa de dados (Só precisamos passar o Projeto, pois as avaliações já estão dentro dele!)
 	dados := struct {
 		Projeto structs.Projeto
-		// Avaliacoes []structs.Avaliacao
 	}{
 		Projeto: projeto,
 	}
@@ -142,20 +141,61 @@ func DetalheTalentoHandler(w http.ResponseWriter, r *http.Request) {
 func SalvarAvaliacaoHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		idProjeto, _ := strconv.Atoi(r.FormValue("id_projeto"))
-		nome := r.FormValue("nome")
-		email := r.FormValue("email")
-		comentario := r.FormValue("comentario")
-		// nota, _ := strconv.Atoi(r.FormValue("nota"))
+		nota, _ := strconv.Atoi(r.FormValue("nota"))
 
-		// Como o visitante não tem login, ele preenche nome e e-mail no form.
-		// Futuramente: implementar o envio de um token pro e-mail para validar antes de exibir.
+		nome := r.FormValue("nome_avaliador")
+		email := r.FormValue("email_avaliador")
+		comentario := r.FormValue("comentario")
+
 		if nome != "" && email != "" && comentario != "" {
-			// models.SalvarAvaliacao(idProjeto, nome, email, nota, comentario)
+
+			// 🛡️ A NOSSA VALIDAÇÃO RIGOROSA ENTRA AQUI
+			_, errEmail := models.ValidarEmailRigoroso(email)
+			if errEmail != nil {
+				fmt.Println("❌ BARRADO NA VALIDAÇÃO DE E-MAIL:", errEmail)
+				// Redireciona de volta avisando que o e-mail falhou
+				http.Redirect(w, r, "/projeto?id="+strconv.Itoa(idProjeto)+"&erro=email_invalido", http.StatusSeeOther)
+				return
+			}
+
+			novaAvaliacao := structs.Avaliacao{ // ou models.Avaliacao
+				IdProjeto:     idProjeto,
+				NomeAvaliador: nome,
+				Email:         email,
+				Nota:          nota,
+				Comentario:    comentario,
+			}
+
+			err := models.SalvarAvaliacao(novaAvaliacao)
+			if err != nil {
+				fmt.Println("❌ ERRO NO BANCO DE DADOS:", err)
+			}
 		}
 
+		// Se deu tudo certo, redireciona com sucesso!
 		http.Redirect(w, r, "/projeto?id="+strconv.Itoa(idProjeto)+"&sucesso=comentario", http.StatusSeeOther)
 	} else {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
 
+func ValidarEmailAPIHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	email := r.URL.Query().Get("email")
+
+	if email == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"valido": false, "mensagem": "E-mail não pode estar vazio."})
+		return
+	}
+
+	// Chama a SUA função rigorosa que está lá no models
+	_, err := models.ValidarEmailRigoroso(email)
+	if err != nil {
+		// Se deu erro (e-mail falso, domínio inexistente), devolve a mensagem de erro!
+		json.NewEncoder(w).Encode(map[string]interface{}{"valido": false, "mensagem": err.Error()})
+		return
+	}
+
+	// Se passou direto, o e-mail é real!
+	json.NewEncoder(w).Encode(map[string]interface{}{"valido": true})
+}
