@@ -53,6 +53,23 @@ func CarregarRotas() {
 	http.HandleFunc("/admin/projetos/salvar", controllers.AdminSalvarProjetoHandler)
 	http.HandleFunc("/admin/projetos/status", controllers.AdminAlterarStatusProjetoHandler)
 	http.HandleFunc("/admin/projetos/excluir", controllers.AdminExcluirProjetoHandler)
+	http.HandleFunc("/admin/projetos/editar", controllers.AdminEditarProjetoHandler)
+
+	// Ações da Tela de Edição de Projetos
+	http.HandleFunc("/admin/projetos/atualizar", controllers.AdminAtualizarProjetoHandler)
+	
+	http.HandleFunc("/admin/projetos/equipe/adicionar", controllers.AdminProjetoAdicionarEquipeHandler)
+	http.HandleFunc("/admin/projetos/equipe/remover", controllers.AdminProjetoRemoverEquipeHandler)
+	
+	http.HandleFunc("/admin/projetos/links/adicionar", controllers.AdminProjetoAdicionarLinkHandler)
+	http.HandleFunc("/admin/projetos/links/remover", controllers.AdminProjetoRemoverLinkHandler)
+	
+	http.HandleFunc("/admin/projetos/arquivos/upload", controllers.AdminProjetoUploadArquivoHandler)
+	http.HandleFunc("/admin/projetos/arquivos/remover", controllers.AdminProjetoRemoverArquivoHandler)
+
+	// Gestão de Analistas (Exclusivo Admin Geral)
+	http.HandleFunc("/admin/analistas", controllers.AdminAnalistasHandler)
+	http.HandleFunc("/admin/analistas/excluir", controllers.AdminExcluirAnalistaHandler)
 
 	// ==========================================
 	// 5. API (Uso interno via JavaScript)

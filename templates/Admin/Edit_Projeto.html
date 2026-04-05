@@ -1,0 +1,422 @@
+{{ define "AdminProjetoEdit" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Projeto - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #09090b;
+        }
+
+        /* CSS DA SIDEBAR COMPLETA */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: sticky !important;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #a1a1aa;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--brand-teal);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            color: white;
+        }
+
+        .panel-card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--brand-teal);
+            border-bottom: 1px solid #27272a;
+            padding-bottom: 10px;
+        }
+
+        .item-list {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #27272a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Estilos da Capa */
+        .project-cover-uploader {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid #3f3f46;
+            margin-bottom: 25px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .project-cover-uploader:hover {
+            border-color: var(--brand-teal);
+        }
+
+        .cover-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-edit-cover {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* NOVO ESTILO DO UPLOAD DE PDF */
+        .custom-file-upload {
+            border: 2px dashed #3f3f46;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-file-upload:hover {
+            border-color: var(--brand-teal);
+            background: rgba(20, 184, 166, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 35px; border-radius: 4px;">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item"><i class="ph ph-squares-four"></i> Painel Geral</a>
+                {{ if not .Usuario.IdCursoAnalista }}
+                <a href="/admin/analistas" class="nav-item"><i class="ph ph-shield-star"></i> Gestão de Analistas</a>
+                {{ end }}
+                <a href="/admin/alunos" class="nav-item"><i class="ph ph-users"></i> Vitrine de Talentos</a>
+                <a href="/admin/projetos" class="nav-item active"><i class="ph ph-folders"></i> Projetos</a>
+                <a href="/admin/perfil" class="nav-item"><i class="ph ph-user-gear"></i> Meu Perfil</a>
+            </nav>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #27272a;">
+                <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="ph ph-sign-out"></i> Sair do
+                    Sistema</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div style="margin-bottom: 30px;">
+                <a href="/admin/projetos"
+                    style="color: var(--text-gray); text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i
+                        class="ph ph-arrow-left"></i> Voltar</a>
+                <h1 style="margin-top: 10px;">Editar: {{ .Projeto.Titulo }}</h1>
+            </div>
+
+            <form action="/admin/projetos/atualizar" method="POST" enctype="multipart/form-data" class="panel-card">
+                <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
+                <h2 class="section-title"><i class="ph ph-info"></i> Dados Principais</h2>
+
+                <label class="form-label" style="margin-bottom: 10px; display: block;">Capa Atual (Clique para
+                    alterar)</label>
+                <div class="project-cover-uploader" onclick="document.getElementById('imagem_capa').click();">
+                    <img id="cover-preview" class="cover-preview-image"
+                        src="{{ if .Projeto.ImagemCapa }}{{ .Projeto.ImagemCapa }}{{ else }}/static/img/default-capa.png{{ end }}">
+                    <div class="btn-edit-cover"><i class="ph ph-pencil-simple"></i> Alterar Capa</div>
+                </div>
+                <input type="file" id="imagem_capa" name="imagem_capa" accept="image/*" style="display: none;"
+                    onchange="previewProjectCover(event)">
+
+                <div class="grid-2">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Título</label>
+                        <input type="text" name="titulo" class="form-input" value="{{ .Projeto.Titulo }}" required>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Descrição</label>
+                        <textarea name="descricao" class="form-input" rows="4">{{ .Projeto.Descricao }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Curso Vinculado</label>
+                        <select name="id_curso" class="form-input" style="cursor: pointer;">
+                            <option value="0" style="color: var(--brand-teal); font-weight: bold;">🌍 Multidisciplinar
+                                (Vários Cursos)</option>
+                            {{ range .Cursos }}
+                            <option value="{{ .IdCurso }}" {{ if eq .IdCurso $.ProjetoIdCurso }}selected{{ end }}>{{
+                                .NomeCurso }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Área / Categoria</label>
+                        <select name="id_area" class="form-input" style="cursor: pointer;">
+                            <option value="0">Selecione a categoria...</option>
+                            {{ range .Areas }}
+                            <option value="{{ .IdArea }}" {{ if eq .IdArea $.ProjetoIdArea }}selected{{ end }}>{{
+                                .NomeArea }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status do Projeto</label>
+                        <select name="status_projeto" class="form-input" style="cursor: pointer;">
+                            <option value="PLANEJADO" {{ if eq .Projeto.StatusProjeto "PLANEJADO" }}selected{{ end }}>
+                                Planejado</option>
+                            <option value="EM_ANDAMENTO" {{ if eq .Projeto.StatusProjeto "EM_ANDAMENTO" }}selected{{ end
+                                }}>Em Andamento</option>
+                            <option value="CONCLUIDO" {{ if eq .Projeto.StatusProjeto "CONCLUIDO" }}selected{{ end }}>
+                                Concluído</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Professor Orientador</label>
+                        <input type="text" name="professor_orientador" class="form-input"
+                            value="{{ .Projeto.ProfessorOrientador }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Semestre Letivo</label>
+                        <input type="text" name="semestre_letivo" class="form-input"
+                            value="{{ .Projeto.SemestreLetivo }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Link do Repositório (Ex: GitHub, Site)</label>
+                        <input type="url" name="link_repositorio" class="form-input"
+                            value="{{ .Projeto.LinkRepositorio }}" placeholder="https://...">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Salvar Alterações Base</button>
+            </form>
+
+            <div class="grid-2">
+                <div class="panel-card">
+                    <h2 class="section-title"><i class="ph ph-users"></i> Equipe do Projeto</h2>
+                    <form action="/admin/projetos/equipe/adicionar" method="POST"
+                        style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
+                        <select name="id_aluno" class="form-input" required style="cursor: pointer; flex-grow: 1;">
+                            <option value="" disabled selected>Selecionar Aluno...</option>
+                            {{ range .Alunos }}<option value="{{ .IdAluno }}">{{ .NomeCompleto }}</option>{{ end }}
+                        </select>
+                        <input type="text" name="funcao" placeholder="Função" class="form-input" style="width: 120px;"
+                            required>
+                        <button type="submit" class="btn btn-primary">+</button>
+                    </form>
+                    {{ range .Projeto.Equipe }}
+                    <div class="item-list">
+                        <span><strong>{{ .NomeCompleto }}</strong> <span
+                                style="color: var(--text-gray); font-size: 0.85rem;">({{ .Biografia }})</span></span>
+                        <a href="/admin/projetos/equipe/remover?id_projeto={{ $.Projeto.IdProjeto }}&id_aluno={{ .IdAluno }}"
+                            style="color: #ef4444;"><i class="ph ph-trash"></i></a>
+                    </div>
+                    {{ else }}
+                    <p style="color: var(--text-gray); font-size: 0.9rem; text-align: center; padding: 10px;">Nenhum
+                        aluno vinculado.</p>
+                    {{ end }}
+                </div>
+
+                <div class="panel-card">
+                    <h2 class="section-title"><i class="ph ph-link"></i> Links Adicionais</h2>
+                    <form action="/admin/projetos/links/adicionar" method="POST" style="margin-bottom: 20px;">
+                        <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
+                        <div style="display: flex; gap: 5px;">
+                            <select name="tipo_link" class="form-input" style="width: 110px; cursor: pointer;">
+                                <option value="YOUTUBE">YouTube</option>
+                                <option value="FORMS">Forms</option>
+                                <option value="OUTRO">Outro</option>
+                            </select>
+                            <input type="url" name="url" placeholder="https://..." class="form-input" required>
+                            <button type="submit" class="btn btn-primary">+</button>
+                        </div>
+                    </form>
+                    {{ range .Projeto.Links }}
+                    <div class="item-list">
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%;">
+                            <i class="ph ph-globe" style="color: var(--brand-orange);"></i> <strong>{{ .TipoLink
+                                }}:</strong> <a href="{{ .Url }}" target="_blank"
+                                style="color: #a1a1aa; text-decoration: none;">{{ .Url }}</a>
+                        </span>
+                        <a href="/admin/projetos/links/remover?id_link={{ .IdLink }}&id_projeto={{ $.Projeto.IdProjeto }}"
+                            style="color: #ef4444;"><i class="ph ph-trash"></i></a>
+                    </div>
+                    {{ else }}
+                    <p style="color: var(--text-gray); font-size: 0.9rem; text-align: center; padding: 10px;">Nenhum
+                        link adicional.</p>
+                    {{ end }}
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <h2 class="section-title"><i class="ph ph-file-pdf"></i> Documentação (PDFs, DOCs)</h2>
+
+                <form action="/admin/projetos/arquivos/upload" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
+
+                    <div class="custom-file-upload" onclick="document.getElementById('arquivo_pdf').click();">
+                        <i class="ph ph-cloud-arrow-up"
+                            style="font-size: 2.5rem; color: var(--brand-teal); margin-bottom: 10px;"></i>
+                        <span id="file-name-display" style="font-weight: 500; color: white;">Clique para selecionar o
+                            documento</span>
+                        <span style="font-size: 0.85rem; color: var(--text-gray); margin-top: 5px;">Formatos suportados:
+                            .pdf, .doc, .docx</span>
+                    </div>
+
+                    <input type="file" id="arquivo_pdf" name="arquivo_pdf" accept=".pdf,.doc,.docx"
+                        style="display: none;" onchange="updateFileName(event)" required>
+
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; margin-top: 15px; background: var(--brand-teal); color: black;">
+                        <i class="ph ph-upload-simple"></i> Enviar Arquivo
+                    </button>
+                </form>
+
+                <div style="margin-top: 30px;">
+                    <h3
+                        style="font-size: 0.9rem; color: #a1a1aa; margin-bottom: 15px; border-bottom: 1px solid #27272a; padding-bottom: 5px;">
+                        Arquivos Anexados</h3>
+                    {{ range .Projeto.Arquivos }}
+                    <div class="item-list"
+                        style="background: rgba(20, 184, 166, 0.05); border-color: rgba(20, 184, 166, 0.2);">
+                        <a href="{{ .CaminhoArquivo }}" target="_blank"
+                            style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 500;">
+                            <i class="ph ph-file-pdf" style="font-size: 1.5rem; color: #ef4444;"></i> {{ .NomeOriginal
+                            }}
+                        </a>
+                        <a href="/admin/projetos/arquivos/remover?id_arquivo={{ .IdArquivo }}&id_projeto={{ $.Projeto.IdProjeto }}"
+                            style="color: #ef4444; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;"
+                            title="Remover"><i class="ph ph-trash"></i></a>
+                    </div>
+                    {{ else }}
+                    <p style="color: var(--text-gray); font-size: 0.9rem; text-align: center; padding: 20px;">Nenhum
+                        documento anexado ainda.</p>
+                    {{ end }}
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Preview da Capa
+        function previewProjectCover(event) {
+            const input = event.target;
+            const preview = document.getElementById('cover-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Interação com o Nome do Arquivo no Upload
+        function updateFileName(event) {
+            const input = event.target;
+            const display = document.getElementById('file-name-display');
+            if (input.files && input.files.length > 0) {
+                display.textContent = input.files[0].name;
+                display.style.color = 'var(--brand-teal)';
+            } else {
+                display.textContent = 'Clique para selecionar o documento';
+                display.style.color = 'white';
+            }
+        }
+    </script>
+</body>
+
+</html>
+{{ end }}

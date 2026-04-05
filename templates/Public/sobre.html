@@ -96,8 +96,8 @@
         <div class="talent-grid">
             {{ range .Analistas }}
             <div class="talent-card">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeCompleto }}" alt="Avatar"
-                    class="analyst-avatar">
+                {{ if .FotoPerfil }} <img src="{{ .FotoPerfil }}" class="analyst-avatar"> {{ else }} <img
+                    src="https://api.dicebear.com..." class="analyst-avatar"> {{ end }}
 
                 <h3 style="font-size: 1.25rem; color: white; margin-bottom: 8px;">{{ .NomeCompleto }}</h3>
 

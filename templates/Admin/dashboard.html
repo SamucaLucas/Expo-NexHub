@@ -6,262 +6,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Admin - NexHub</title>
+    <title>Painel Admin - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Container principal */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #09090b;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Forçamos a Sidebar a respeitar o grid e não flutuar */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            /* Impede que seja esmagada */
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: sticky !important;
+            /* Sobrescreve o fixed do style.css antigo */
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #a1a1aa;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--brand-teal);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        /* Forçamos o Conteúdo Principal a ocupar o resto e não entrar debaixo da sidebar */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-width: calc(100% - 260px);
+            /* Garante que não vai empurrar a tela pra fora */
+            margin-left: 0 !important;
+            /* Reseta margens fantasmas */
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(20, 184, 166, 0.02) 100%);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            padding: 25px;
+            transition: 0.2s;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-card:hover {
+            border-color: var(--brand-teal);
+            transform: translateY(-3px);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 
-<body style="background-color: #09090b;">
-
-    <input type="hidden" id="data-meses" value="{{ range .ChartMeses }}{{ . }},{{ end }}">
-    <input type="hidden" id="data-novos-users" value="{{ range .ChartNovosUsers }}{{ . }},{{ end }}">
-    <input type="hidden" id="data-total-devs" value="{{ .TotalDevs }}">
-    <input type="hidden" id="data-total-empresas" value="{{ .TotalEmpresas }}">
-    <input type="hidden" id="data-total-banidos" value="{{ .TotalBanidos }}">
-
-    <div id="intro-overlay">
-        <div class="intro-nebula"></div>
-        <div class="intro-content">
-            <h2 id="intro-text" class="typing-text"></h2>
-            <img id="intro-gif" src="" alt="Intro Logo"
-                style="width: 100%; max-width: 600px; opacity: 0; transition: opacity 1s ease; margin-top: -20px;">
-        </div>
-    </div>
-
-    <div
-        style="position: fixed; top: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, #7c3aed, transparent 70%); opacity: 0.15; filter: blur(120px); z-index: 0; pointer-events: none;">
-    </div>
-    <div
-        style="position: fixed; bottom: -20%; left: -10%; width: 40vw; height: 40vw; background: radial-gradient(circle, #a78bfa, transparent 70%); opacity: 0.1; filter: blur(100px); z-index: 0; pointer-events: none;">
-    </div>
-
-    <div class="dashboard-container">
-
-        <aside class="sidebar" style="border-right: 1px solid rgba(139, 92, 246, 0.2);">
-            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
-                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px; ">
-            </a>
-
-            <nav class="sidebar-menu">
-                <a href="/admin/dashboard" class="sidebar-item active"
-                    style="color: #a78bfa; border-color: #a78bfa; background: rgba(139, 92, 246, 0.1);">
-                    <i class="ph ph-chart-line-up"></i>
-                </a>
-
-                <a href="/admin/usuarios" class="sidebar-item" title="Gerenciar Usuários">
-                    <i class="ph ph-users"></i>
-                </a>
-
-                <a href="/admin/projetos" class="sidebar-item" title="Gerenciar Projetos">
-                    <i class="ph ph-briefcase"></i>
-                </a>
-
-                <a href="/chat" class="sidebar-item" title="Mensagens">
-                    <i class="ph ph-chat-circle-dots"></i>
-                    {{ if gt .NaoLidas 0 }}
-                    <span class="badge-dot" style="margin-left: -5.5px; margin-bottom: 25px;"></span>
-                    {{ end }}
-                </a>
-
-                <a href="/admin/perfil" class="sidebar-item" title="Perfil">
-                    <i class="ph ph-gear"></i>
-                </a>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 35px; border-radius: 4px;">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item active"><i class="ph ph-squares-four"></i> Painel Geral</a>
+                {{ if not .Usuario.IdCursoAnalista }}
+                <a href="/admin/analistas" class="nav-item"><i class="ph ph-shield-star"></i> Gestão de Analistas</a>
+                {{ end }}
+                <a href="/admin/alunos" class="nav-item"><i class="ph ph-users"></i> Vitrine de Talentos</a>
+                <a href="/admin/projetos" class="nav-item"><i class="ph ph-folders"></i> Projetos</a>
+                <a href="/admin/perfil" class="nav-item"><i class="ph ph-user-gear"></i> Meu Perfil</a>
             </nav>
-
-            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;">
-                <i class="ph ph-power"></i>
-            </a>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #27272a;">
+                <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="ph ph-sign-out"></i> Sair do
+                    Sistema</a>
+            </div>
         </aside>
 
         <main class="main-content">
-
-            <div class="dash-header">
+            <header class="topbar">
                 <div>
-                    <span style="color: #a78bfa; font-weight: 700; letter-spacing: 1px; font-size: 0.8rem;">MODO
-                        ADMINISTRADOR</span>
-                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Visão Geral do Sistema</h1>
+                    <h1 style="font-size: 1.8rem; color: white;">Painel Administrativo</h1>
+                    <p style="color: var(--text-gray); font-size: 0.95rem;">Gestão Institucional - Unifadesa</p>
                 </div>
-                <div class="user-info-header" style="display: flex; align-items: center; gap: 10px;">
-                    <div style="text-align: right;">
-                        <span style="display: block; font-weight: 600; color: white;">{{ .Usuario.NomeCompleto
-                            }}</span>
-                        <span style="font-size: 0.8rem; color: #a78bfa;">Super Admin</span>
+                <div
+                    style="display: flex; align-items: center; gap: 15px; background: #18181b; padding: 8px 15px; border-radius: 50px; border: 1px solid #27272a;">
+                    <i class="ph ph-user-circle" style="font-size: 1.5rem; color: var(--brand-teal);"></i>
+                    <span style="color: white; font-weight: 500; font-size: 0.9rem;">{{ .Usuario.NomeCompleto }}
+                        (ADS)</span>
+                </div>
+            </header>
+
+            <div class="welcome-card">
+                <h2 style="font-size: 2rem; color: white; margin-bottom: 10px;">Olá, {{ .Usuario.NomeCompleto }}! 👋
+                </h2>
+                <p style="color: #a1a1aa; font-size: 1.1rem; max-width: 600px; line-height: 1.6;">
+                    Bem-vindo ao centro de comando do NexHub. Como Analista de Sistemas da instituição, você é
+                    responsável por curar e publicar os projetos multidisciplinares e gerenciar os perfis dos alunos em
+                    destaque.
+                </p>
+                <i class="ph ph-student"
+                    style="position: absolute; right: 20px; bottom: -20px; font-size: 12rem; color: rgba(20, 184, 166, 0.05);"></i>
+            </div>
+
+            <h3 style="color: white; margin-bottom: 20px; font-size: 1.2rem;">Ações Rápidas</h3>
+            <div class="quick-actions">
+                <a href="/admin/alunos" class="action-card">
+                    <div class="action-icon" style="background: rgba(20, 184, 166, 0.1); color: var(--brand-teal);">
+                        <i class="ph ph-user-plus"></i>
                     </div>
+                    <h4 style="color: white; font-size: 1.1rem; margin-bottom: 5px;">Cadastrar Talento</h4>
+                    <p style="color: var(--text-gray); font-size: 0.85rem;">Adicionar novo aluno à vitrine da Unifadesa.
+                    </p>
+                </a>
 
-                    {{ if .Usuario.FotoPerfil }}
-                    <img src="{{ .Usuario.FotoPerfil }}"
-                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #a78bfa;">
-                    {{ else }}
-                    <div
-                        style="width: 45px; height: 45px; background: #a78bfa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black;">
-                        AD
+                <a href="/admin/projetos" class="action-card">
+                    <div class="action-icon" style="background: rgba(255, 153, 0, 0.1); color: var(--brand-orange);">
+                        <i class="ph ph-folder-plus"></i>
                     </div>
-                    {{ end }}
-                </div>
+                    <h4 style="color: white; font-size: 1.1rem; margin-bottom: 5px;">Publicar Projeto</h4>
+                    <p style="color: var(--text-gray); font-size: 0.85rem;">Fazer upload de PDFs, capas e registrar
+                        projetos.</p>
+                </a>
+
+                <a href="/" target="_blank" class="action-card">
+                    <div class="action-icon" style="background: rgba(255, 255, 255, 0.05); color: #e4e4e7;">
+                        <i class="ph ph-globe"></i>
+                    </div>
+                    <h4 style="color: white; font-size: 1.1rem; margin-bottom: 5px;">Ver Portal</h4>
+                    <p style="color: var(--text-gray); font-size: 0.85rem;">Acessar a visão pública do site em nova aba.
+                    </p>
+                </a>
             </div>
-
-            <div class="stats-grid">
-                <div class="stat-card" style="border-top: 3px solid #00ffd1;">
-                    <span class="stat-title">Total de Desenvolvedores</span>
-                    <span class="stat-value">{{ .TotalDevs }}</span>
-                </div>
-
-                <div class="stat-card" style="border-top: 3px solid #ff9900;">
-                    <span class="stat-title">Total de Empresas</span>
-                    <span class="stat-value">{{ .TotalEmpresas }}</span>
-                </div>
-
-                <div class="stat-card" style="border-top: 3px solid #ef4444;">
-                    <span class="stat-title">Denúncias / Bans</span>
-                    <span class="stat-value" style="color: #ef4444;">{{ .TotalBanidos }}</span>
-                </div>
-                <div class="stat-card" style="border-top: 3px solid #a78bfa;">
-                    <span class="stat-title">Projetos Publicados</span>
-                    <span class="stat-value">{{ .TotalProjetos }}</span>
-                </div>
-            </div>
-
-            <h2 style="font-size: 1.2rem; color: white; margin-bottom: 20px; font-weight: 600;">Análise de Dados</h2>
-            <div class="charts-wrapper">
-
-                <div class="chart-box">
-                    <canvas id="chartUsers"></canvas>
-                </div>
-
-                <div class="chart-box">
-                    <canvas id="chartType"></canvas>
-                </div>
-
-            </div>
-
         </main>
     </div>
-
-    <script>
-        // --- LEITURA DOS DADOS DO GO (SEM TRAVAR O SCRIPT) ---
-        // Pegamos o texto do input, separamos por vírgula e removemos vazios
-
-        // 1. Array de Meses (Texto)
-        const rawMeses = document.getElementById('data-meses').value;
-        const labelsMeses = rawMeses.split(',').filter(item => item.trim() !== "");
-
-        // 2. Array de Usuários (Números)
-        const rawUsers = document.getElementById('data-novos-users').value;
-        const dadosNovosUsers = rawUsers.split(',').filter(item => item.trim() !== "").map(Number);
-
-        // 3. Totais (Números)
-        const totalDevs = Number(document.getElementById('data-total-devs').value);
-        const totalEmpresas = Number(document.getElementById('data-total-empresas').value);
-        const totalBanidos = Number(document.getElementById('data-total-banidos').value);
-
-
-        // --- CONFIGURAÇÃO DOS GRÁFICOS ---
-        Chart.defaults.color = '#71717a';
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
-
-        // 1. Gráfico de Linha
-        const ctx1 = document.getElementById('chartUsers');
-        if (ctx1) {
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: labelsMeses,
-                    datasets: [{
-                        label: 'Novos Usuários',
-                        data: dadosNovosUsers,
-                        borderColor: '#a78bfa',
-                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Crescimento da Plataforma', color: 'white' }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        }
-
-        // 2. Gráfico de Rosca
-        const ctx2 = document.getElementById('chartType');
-        if (ctx2) {
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Desenvolvedores', 'Empresas', 'Banidos'],
-                    datasets: [{
-                        data: [totalDevs, totalEmpresas, totalBanidos],
-                        backgroundColor: ['#00ffd1', '#ff9900', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        title: { display: true, text: 'Distribuição de Usuários', color: 'white' }
-                    }
-                }
-            });
-        }
-
-        // --- ANIMAÇÃO DE INTRO ---
-        document.addEventListener("DOMContentLoaded", function () {
-            if (sessionStorage.getItem("introShown")) {
-                const overlay = document.getElementById("intro-overlay");
-                if (overlay) overlay.style.display = "none";
-                return;
-            }
-
-            const textElement = document.getElementById("intro-text");
-            const gifImage = document.getElementById("intro-gif");
-            const overlay = document.getElementById("intro-overlay");
-            const gifPath = "/static/img/intro-animation.gif?" + Date.now();
-            const textToType = "Bem-vindo {{ .Usuario.NomeCompleto}} ao...";
-            let charIndex = 0;
-
-            function typeWriter() {
-                if (textElement && charIndex < textToType.length) {
-                    textElement.innerHTML += textToType.charAt(charIndex);
-                    charIndex++;
-                    setTimeout(typeWriter, 100);
-                } else {
-                    setTimeout(playGifAnimation, 300);
-                }
-            }
-
-            function playGifAnimation() {
-                if (gifImage) {
-                    gifImage.src = gifPath;
-                    gifImage.style.opacity = "1";
-                    setTimeout(finishIntro, 3100);
-                } else {
-                    finishIntro();
-                }
-            }
-
-            function finishIntro() {
-                if (overlay) {
-                    overlay.classList.add("intro-hidden");
-                    setTimeout(() => { overlay.style.display = "none"; }, 1000);
-                }
-                sessionStorage.setItem("introShown", "true");
-            }
-
-            setTimeout(typeWriter, 300);
-        });
-    </script>
-{{ template "GlobalNotifications" .Usuario }}
 </body>
 
 </html>

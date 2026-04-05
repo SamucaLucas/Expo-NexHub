@@ -11,12 +11,13 @@ import (
 
 // Usuario representa os Analistas de ADS (Admins)
 type Usuario struct {
-	IdUsuario    int       `json:"id_usuario" db:"id_usuario"`
-	NomeCompleto string    `json:"nome_completo" db:"nome_completo"`
-	Email        string    `json:"email" db:"email"`
-	SenhaHash    string    `json:"-" db:"senha_hash"`
+	IdUsuario       int       `json:"id_usuario" db:"id_usuario"`
+	NomeCompleto    string    `json:"nome_completo" db:"nome_completo"`
+	Email           string    `json:"email" db:"email"`
+	SenhaHash       string    `json:"-" db:"senha_hash"`
 	IdCursoAnalista *int      `json:"id_curso_analista" db:"id_curso_analista"`
-	DataCadastro time.Time `json:"data_cadastro" db:"data_cadastro"`
+	FotoPerfil      string    `json:"foto_perfil" db:"foto_perfil"`
+	DataCadastro    time.Time `json:"data_cadastro" db:"data_cadastro"`
 }
 
 func (u Usuario) PrimeiroNome() string {

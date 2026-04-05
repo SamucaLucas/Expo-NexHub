@@ -1,0 +1,398 @@
+{{ define "AdminAlunos" }}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/logo2.png" type="image/png">
+    <title>Gestão de Talentos - NexHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Container principal */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #09090b;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Forçamos a Sidebar a respeitar o grid e não flutuar */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            /* Impede que seja esmagada */
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: sticky !important;
+            /* Sobrescreve o fixed do style.css antigo */
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #a1a1aa;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--brand-teal);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        /* Forçamos o Conteúdo Principal a ocupar o resto e não entrar debaixo da sidebar */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-width: calc(100% - 260px);
+            /* Garante que não vai empurrar a tela pra fora */
+            margin-left: 0 !important;
+            /* Reseta margens fantasmas */
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #18181b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #27272a;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .admin-table th {
+            background: rgba(255, 255, 255, 0.02);
+            color: #a1a1aa;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .admin-table td {
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #3f3f46;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Estilos do Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-close:hover {
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 35px; border-radius: 4px;">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item"><i class="ph ph-squares-four"></i> Painel Geral</a>
+
+                {{ if not .Usuario.IdCursoAnalista }}
+                <a href="/admin/analistas" class="nav-item"><i class="ph ph-shield-star"></i> Gestão de Analistas</a>
+                {{ end }}
+
+                <a href="/admin/alunos" class="nav-item active"><i class="ph ph-users"></i> Vitrine de Talentos</a>
+                <a href="/admin/projetos" class="nav-item"><i class="ph ph-folders"></i> Projetos</a>
+                <a href="/admin/perfil" class="nav-item"><i class="ph ph-user-gear"></i> Meu Perfil</a>
+            </nav>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #27272a;">
+                <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="ph ph-sign-out"></i> Sair do
+                    Sistema</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <h1 style="font-size: 1.8rem; color: white;"><i class="ph ph-users"
+                            style="color: var(--brand-teal); margin-right: 5px;"></i> Vitrine de Talentos</h1>
+                    <p style="color: var(--text-gray); font-size: 0.95rem;">Cadastre e gerencie os alunos em destaque da
+                        instituição.</p>
+                </div>
+                <button onclick="abrirModal()" class="btn btn-primary"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <i class="ph ph-plus-circle" style="font-size: 1.2rem;"></i> Cadastrar Aluno
+                </button>
+            </header>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Curso / Semestre</th>
+                        <th>Contato</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range .Alunos }}
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                {{ if .FotoPerfil }}
+                                <img src="{{ .FotoPerfil }}" class="user-avatar">
+                                {{ else }}
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeCompleto }}"
+                                    class="user-avatar">
+                                {{ end }}
+                                <strong>{{ .NomeCompleto }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="color: white; font-weight: 500;">{{ if .Curso.NomeCurso }}{{ .Curso.NomeCurso
+                                }}{{ else }}Não informado{{ end }}</div>
+                            {{ if .SemestreAtual }}
+                            <div style="color: var(--brand-teal); font-size: 0.85rem;">{{ .SemestreAtual }}º Semestre
+                            </div>
+                            {{ end }}
+                        </td>
+                        <td>
+                            {{ if .EmailContato }}
+                            <div style="color: #a1a1aa; font-size: 0.9rem;"><i class="ph ph-envelope-simple"></i> {{
+                                .EmailContato }}</div>
+                            {{ else }}
+                            <span style="color: #52525b; font-size: 0.85rem;">Sem contato</span>
+                            {{ end }}
+                        </td>
+                        <td>
+                            <a href="/talento?id={{ .IdAluno }}" target="_blank" class="btn btn-ghost"
+                                style="padding: 6px 10px; font-size: 0.85rem; border: 1px solid #3f3f46; color: white; margin-right: 5px;"
+                                title="Ver Perfil Público">
+                                <i class="ph ph-eye"></i>
+                            </a>
+                            <a href="/admin/alunos/excluir?id={{ .IdAluno }}" class="btn-delete" title="Excluir Aluno"
+                                onclick="return confirm('Tem certeza que deseja excluir o aluno {{ .NomeCompleto }}?');">
+                                <i class="ph ph-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {{ end }}
+
+                    {{ if not .Alunos }}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-gray);">Nenhum aluno
+                            cadastrado na vitrine ainda.</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <div id="modalNovoAluno" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; font-size: 1.5rem;">Cadastrar Novo Talento</h2>
+                <button onclick="fecharModal()" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+
+            <form action="/admin/alunos/salvar" method="POST" enctype="multipart/form-data">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Nome Completo do Aluno</label>
+                        <input type="text" name="nome_completo" class="form-input" required
+                            placeholder="Ex: Maria Joaquina">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Curso</label>
+                        <select name="id_curso" class="form-input" required style="cursor: pointer;">
+                            <option value="" disabled selected>Selecione o Curso...</option>
+                            {{ range .Cursos }}
+                            <option value="{{ .IdCurso }}">{{ .NomeCurso }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Semestre Atual (Número)</label>
+                        <input type="number" name="semestre_atual" class="form-input" min="1" max="12"
+                            placeholder="Ex: 4">
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Foto de Perfil (Opcional)</label>
+                        <input type="file" name="foto_perfil" class="form-input" accept="image/*" style="padding: 8px;">
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">Biografia / Resumo Profissional</label>
+                        <textarea name="biografia" class="form-input" rows="3"
+                            placeholder="Breve resumo das habilidades e objetivos do aluno..."></textarea>
+                    </div>
+
+                    <h4
+                        style="color: white; grid-column: span 2; margin-top: 10px; padding-bottom: 5px; border-bottom: 1px solid #27272a;">
+                        Contatos e Redes Sociais</h4>
+
+                    <div class="form-group">
+                        <label class="form-label">E-mail de Contato</label>
+                        <input type="email" name="email_contato" class="form-input" placeholder="aluno@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn (URL)</label>
+                        <input type="url" name="linkedin_link" class="form-input"
+                            placeholder="https://linkedin.com/in/...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GitHub (URL)</label>
+                        <input type="url" name="github_link" class="form-input" placeholder="https://github.com/...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Portfólio (URL)</label>
+                        <input type="url" name="portfolio_link" class="form-input" placeholder="https://seusite.com">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px;">
+                    <button type="button" onclick="fecharModal()" class="btn btn-ghost"
+                        style="border: 1px solid #3f3f46; color: white;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Aluno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() {
+            document.getElementById('modalNovoAluno').style.display = 'flex';
+        }
+        function fecharModal() {
+            document.getElementById('modalNovoAluno').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
+{{ end }}

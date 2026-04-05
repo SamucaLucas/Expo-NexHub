@@ -6,168 +6,495 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/logo2.png" type="image/png">
-    <title>Gerenciar Projetos - Admin</title>
+    <title>Gestão de Projetos - NexHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* Estilo para linha de projeto oculto */
-        .project-hidden-row {
-            opacity: 0.6;
-            background-color: rgba(239, 68, 68, 0.05);
-            border-left: 3px solid #ef4444;
+        /* Container principal - Correção de Sidebar */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #09090b;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: sticky !important;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding: 0 10px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #a1a1aa;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--brand-teal);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-width: calc(100% - 260px);
+            margin-left: 0 !important;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        /* Tabela */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #18181b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #27272a;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .admin-table th {
+            background: rgba(255, 255, 255, 0.02);
+            color: #a1a1aa;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .admin-table td {
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        /* Itens da Tabela */
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .project-cover-mini {
+            width: 60px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #3f3f46;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-manage {
+            background: rgba(255, 153, 0, 0.1);
+            color: var(--brand-orange);
+            border: 1px solid rgba(255, 153, 0, 0.3);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 30px;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-close:hover {
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 30px;
+            flex-grow: 1;
+        }
+
+        /* --- ESTILOS EXCLUSIVOS DO NOVO CAMPO DE CAPA --- */
+        .project-cover-uploader {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 2px dashed #3f3f46;
+            margin-bottom: 30px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .project-cover-uploader:hover {
+            border-color: var(--brand-teal);
+        }
+
+        .cover-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            /* Escondida por padrão até o upload */
+        }
+
+        .upload-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: #a1a1aa;
+        }
+
+        .upload-placeholder i {
+            font-size: 3rem;
+            color: #52525b;
+        }
+
+        .upload-placeholder span {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Botão flutuante de editar (aparece após upload) */
+        .btn-edit-cover {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: none;
+            /* Escondido */
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
 
-<body style="background-color: #09090b;">
-    <div
-        style="position: fixed; top: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, #7c3aed, transparent 70%); opacity: 0.15; filter: blur(120px); z-index: 0; pointer-events: none;">
-    </div>
-    <div
-        style="position: fixed; bottom: -20%; left: -10%; width: 40vw; height: 40vw; background: radial-gradient(circle, #a78bfa, transparent 70%); opacity: 0.1; filter: blur(100px); z-index: 0; pointer-events: none;">
-    </div>
-
-    <div class="dashboard-container">
-
-        <aside class="sidebar" style="border-right: 1px solid rgba(139, 92, 246, 0.2);">
-            <a href="/" style="text-decoration: none; margin-bottom: 10px;">
-                <img src="/static/img/logo2.png" style="width: 40px; height: 40px; border-radius: 8px; ">
-            </a>
-            <nav class="sidebar-menu">
-                <a href="/admin/dashboard" class="sidebar-item"><i class="ph ph-chart-line-up"></i></a>
-                <a href="/admin/usuarios" class="sidebar-item"><i class="ph ph-users"></i></a>
-                <a href="/admin/projetos" class="sidebar-item active"
-                    style="color: #a78bfa; border-color: #a78bfa; background: rgba(139, 92, 246, 0.1);">
-                    <i class="ph ph-briefcase"></i>
-                    <a href="/chat" class="sidebar-item" title="Mensagens">
-                        <i class="ph ph-chat-circle-dots"></i>
-                        {{ if gt .NaoLidas 0 }}
-                        <span class="badge-dot" style="margin-left: -5.5px; margin-bottom: 25px;"></span>
-                        {{ end }}
-                    </a>
-                    <a href="/admin/perfil" class="sidebar-item" title="Perfil"><i class="ph ph-gear"></i>
-                    </a>
-                </a>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/static/img/logo-nexhub.png" alt="NexHub" style="height: 35px; border-radius: 4px;">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard" class="nav-item"><i class="ph ph-squares-four"></i> Painel Geral</a>
+                {{ if not .Usuario.IdCursoAnalista }}
+                <a href="/admin/analistas" class="nav-item"><i class="ph ph-shield-star"></i> Gestão de Analistas</a>
+                {{ end }}
+                <a href="/admin/alunos" class="nav-item"><i class="ph ph-users"></i> Vitrine de Talentos</a>
+                <a href="/admin/projetos" class="nav-item active"><i class="ph ph-folders"></i> Projetos</a>
+                <a href="/admin/perfil" class="nav-item"><i class="ph ph-user-gear"></i> Meu Perfil</a>
             </nav>
-            <a href="/logout" class="sidebar-item" style="margin-top: auto; margin-bottom: 25px; color: #ef4444;"><i
-                    class="ph ph-power"></i></a>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #27272a;">
+                <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="ph ph-sign-out"></i> Sair do
+                    Sistema</a>
+            </div>
         </aside>
 
         <main class="main-content">
-            <div class="dash-header">
+            <header class="topbar">
                 <div>
-                    <h1 style="font-size: 2rem; font-weight: 700; color: white;">Gerenciar Projetos</h1>
-                    <p style="color: var(--text-gray);">Moderação de conteúdo e vitrine</p>
+                    <h1 style="font-size: 1.8rem; color: white;"><i class="ph ph-folders"
+                            style="color: var(--brand-teal); margin-right: 5px;"></i> Projetos Acadêmicos</h1>
+                    <p style="color: var(--text-gray); font-size: 0.95rem;">Publique e gerencie o portfólio de projetos
+                        da instituição.</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="text-align: right;">
-                        <span style="display: block; font-weight: 600; color: white;">{{ .Usuario.NomeCompleto
-                            }}</span>
-                        <span style="font-size: 0.8rem; color: #a78bfa;">Super Admin</span>
-                    </div>
-                    {{ if .Usuario.FotoPerfil }}
-                    <img src="{{ .Usuario.FotoPerfil }}"
-                        style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #a78bfa;">
-                    {{ else }}
-                    <div
-                        style="width: 45px; height: 45px; background: #a78bfa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black;">
-                        AD</div>
+                <button onclick="abrirModal()" class="btn btn-primary"
+                    style="display: flex; align-items: center; gap: 8px;">
+                    <i class="ph ph-folder-plus" style="font-size: 1.2rem;"></i> Cadastrar Projeto
+                </button>
+            </header>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Curso</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range .Projetos }}
+                    <tr>
+                        <td>
+                            <div class="project-info">
+                                {{ if .ImagemCapa }} <img src="{{ .ImagemCapa }}" class="project-cover-mini">
+                                {{ else }} <img src="/static/img/default-capa.png" class="project-cover-mini"> {{ end }}
+                                <strong>{{ .Titulo }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ if .Curso.NomeCurso }}{{ .Curso.NomeCurso }}{{ else }}Multidisciplinar{{ end }}</td>
+                        <td>
+                            {{ if eq .StatusProjeto "CONCLUIDO" }} <span style="color: #10b981;">Concluído</span>
+                            {{ else if eq .StatusProjeto "EM_ANDAMENTO" }} <span style="color: #3b82f6;">Em
+                                Andamento</span>
+                            {{ else }} <span style="color: #f59e0b;">Planejado</span> {{ end }}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <a href="/projeto?id={{ .IdProjeto }}" target="_blank" class="btn-action"><i
+                                        class="ph ph-eye"></i></a>
+                                <a href="/admin/projetos/editar?id={{ .IdProjeto }}" class="btn-action btn-manage"><i
+                                        class="ph ph-pencil"></i></a>
+                                <a href="/admin/projetos/excluir?id={{ .IdProjeto }}" class="btn-delete btn-action"
+                                    onclick="return confirm('Tem certeza?');"><i class="ph ph-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
                     {{ end }}
-                </div>
-            </div>
-
-            <form action="/admin/projetos" method="GET" class="admin-search-form"
-                style="margin-bottom: 20px; display: flex; gap: 10px;">
-                <input type="text" name="q" value="{{ .Busca }}" class="form-input" placeholder="Buscar projeto..."
-                    style="max-width: 300px;">
-
-                <select name="status" class="form-input" style="max-width: 200px;">
-                    <option value="">Todos os Status</option>
-                    <option value="Planejado" {{ if eq .Status "Planejado" }}selected{{ end }}>Planejado</option>
-                    <option value="Em Andamento" {{ if eq .Status "Em Andamento" }}selected{{ end }}>Em Andamento
-                    </option>
-                    <option value="Concluido" {{ if eq .Status "Concluido" }}selected{{ end }}>Concluído</option>
-                    <option value="Oculto" {{ if eq .Status "Oculto" }}selected{{ end }}>Oculto</option>
-                </select>
-
-                <button type="submit" class="btn btn-primary"
-                    style="background: #a78bfa; border-color: #a78bfa;">Filtrar</button>
-            </form>
-
-            <div class="admin-table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Projeto</th>
-                            <th>Dono (Dev)</th>
-                            <th>Categoria</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{ range .Projetos }}
-                        <tr class="{{ if eq .Status " Oculto" }}project-hidden-row{{ end }}">
-                            <td>#{{ .Id }}</td>
-                            <td style="font-weight: 600; color: white;">{{ .Titulo }}</td>
-                            <td>{{ .DonoNome }}</td>
-                            <td>{{ .Categoria }}</td>
-
-                            <td>
-                                {{ if eq .Status "Concluido" }}
-                                <span class="badge"
-                                    style="background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2);">Concluído</span>
-                                {{ else if eq .Status "Em Andamento" }}
-                                <span class="badge"
-                                    style="background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2);">Em
-                                    Andamento</span>
-                                {{ else if eq .Status "Oculto" }}
-                                <span style="color: #ef4444; font-weight: bold;">Oculto</span>
-                                {{ else }}
-                                <span class="badge">{{ .Status }}</span>
-                                {{ end }}
-                            </td>
-
-                            <td>
-                                <div style="display: flex; gap: 5px;">
-
-                                    {{ if eq .Status "Oculto" }}
-                                    <a href="/admin/status-projeto?id={{ .Id }}&acao=aprovar" class="action-btn"
-                                        style="background: rgba(74, 222, 128, 0.2); color: #4ade80;"
-                                        title="Aprovar/Exibir">
-                                        <i class="ph ph-check"></i>
-                                    </a>
-                                    {{ else }}
-                                    <a href="/admin/status-projeto?id={{ .Id }}&acao=ocultar" class="action-btn"
-                                        style="background: rgba(250, 204, 21, 0.2); color: #facc15;"
-                                        title="Ocultar Projeto"
-                                        onclick="return confirm('Ocultar este projeto da vitrine?');">
-                                        <i class="ph ph-eye-slash"></i>
-                                    </a>
-                                    {{ end }}
-
-                                    <a href="/admin/excluir-projeto?id={{ .Id }}" class="action-btn btn-ban"
-                                        title="Excluir Permanentemente"
-                                        onclick="return confirm('TEM CERTEZA? Isso apagará o projeto permanentemente.');">
-                                        <i class="ph ph-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {{ else }}
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-gray);">Nenhum
-                                projeto encontrado.</td>
-                        </tr>
-                        {{ end }}
-                    </tbody>
-                </table>
-            </div>
-
+                </tbody>
+            </table>
         </main>
     </div>
-    {{ template "GlobalNotifications" .Usuario }}
+
+    <div id="modalNovoProjeto" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: white; font-size: 1.5rem;">Cadastrar Novo Projeto</h2>
+                <button onclick="fecharModal()" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <form action="/admin/projetos/salvar" method="POST" enctype="multipart/form-data">
+
+                    <label class="form-label" style="margin-bottom: 10px; display: block;">Imagem de Capa do Projeto
+                        (Thumbnail)</label>
+                    <div class="project-cover-uploader" onclick="document.getElementById('imagem_capa').click();">
+
+                        <img id="cover-preview" class="cover-preview-image" alt="Pre-visualização">
+
+                        <div id="upload-placeholder" class="upload-placeholder">
+                            <i class="ph ph-image"></i>
+                            <span>Clique para selecionar a capa</span>
+                            <small style="color: #52525b; font-size: 0.8rem;">Recomendado: 1200x800px (16:9)</small>
+                        </div>
+
+                        <div id="btn-edit-cover" class="btn-edit-cover">
+                            <i class="ph ph-pencil-simple"></i> Alterar Capa
+                        </div>
+                    </div>
+
+                    <input type="file" id="imagem_capa" name="imagem_capa" accept="image/*" style="display: none;"
+                        onchange="previewProjectCover(event)" required>
+
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Título do Projeto</label>
+                            <input type="text" name="titulo" class="form-input" required
+                                placeholder="Ex: Sistema de Gestão Escolar">
+                        </div>
+
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Resumo / Descrição</label>
+                            <textarea name="descricao" class="form-input" rows="4" required
+                                placeholder="Descreva o objetivo e o impacto..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Curso Vinculado</label>
+                            <select name="id_curso" class="form-input" required style="cursor: pointer;">
+                                <option value="" disabled selected>Selecione o curso...</option>
+                                <option value="0" style="color: var(--brand-teal); font-weight: bold;">🌍
+                                    Multidisciplinar (Vários Cursos)</option>
+                                {{ range .Cursos }} <option value="{{ .IdCurso }}">{{ .NomeCurso }}</option> {{ end }}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Área / Categoria</label>
+                            <select name="id_area" class="form-input" required style="cursor: pointer;">
+                                <option value="" disabled selected>Selecione a categoria...</option>
+                                {{ range .Areas }} <option value="{{ .IdArea }}">{{ .NomeArea }}</option> {{ end }}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Status do Projeto</label>
+                            <select name="status_projeto" class="form-input" required style="cursor: pointer;">
+                                <option value="PLANEJADO">Planejado</option>
+                                <option value="EM_ANDAMENTO" selected>Em Andamento</option>
+                                <option value="CONCLUIDO">Concluído</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Semestre Letivo (Opcional)</label>
+                            <input type="text" name="semestre_letivo" class="form-input" placeholder="Ex: 2026.1">
+                        </div>
+
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Professor Orientador (Opcional)</label>
+                            <input type="text" name="professor_orientador" class="form-input"
+                                placeholder="Ex: Prof. Dr. João Silva">
+                        </div>
+
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #27272a;">
+                        <button type="button" onclick="fecharModal()" class="btn btn-ghost"
+                            style="border: 1px solid #3f3f46; color: white;">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Projeto Inicial</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() { document.getElementById('modalNovoProjeto').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modalNovoProjeto').style.display = 'none'; }
+
+        // --- SCRIPT MÁGICO PARA VISUALIZAÇÃO PRÉVIA DA CAPA ---
+        function previewProjectCover(event) {
+            const input = event.target;
+            const preview = document.getElementById('cover-preview');
+            const placeholder = document.getElementById('upload-placeholder');
+            const btnEdit = document.getElementById('btn-edit-cover');
+            const uploaderContainer = document.querySelector('.project-cover-uploader');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // 1. Atualiza o src e exibe a imagem
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+
+                    // 2. Esconde o placeholder inicial
+                    placeholder.style.display = 'none';
+
+                    // 3. Exibe o botão flutuante de editar
+                    btnEdit.style.display = 'flex';
+
+                    // 4. Remove a borda tracejada
+                    uploaderContainer.style.borderStyle = 'solid';
+                }
+
+                reader.readAsDataURL(input.files[0]); // Lê o arquivo localmente
+            }
+        }
+    </script>
 </body>
 
 </html>

@@ -3,6 +3,7 @@ package models
 import (
 	"nexhub/db"
 	"nexhub/structs"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -59,13 +60,20 @@ func VerificarEmailExiste(email string) bool {
 // BuscarUsuarioPorID retorna os dados do Admin logado
 func BuscarUsuarioPorID(id int) (structs.Usuario, error) {
 	var u structs.Usuario
-
-	sqlStatement := `
-        SELECT id_usuario, nome_completo, email 
-        FROM usuarios WHERE id_usuario = $1`
-
-	row := db.DB.QueryRow(sqlStatement, id)
-	err := row.Scan(&u.IdUsuario, &u.NomeCompleto, &u.Email)
+	query := `
+		SELECT id_usuario, nome_completo, email, senha_hash, id_curso_analista, foto_perfil 
+		FROM usuarios 
+		WHERE id_usuario = $1`
+		
+	row := db.DB.QueryRow(query, id)
+	
+	var fotoPerfil *string 
+	// Agora pegando o &u.SenhaHash na ordem certa do SELECT
+	err := row.Scan(&u.IdUsuario, &u.NomeCompleto, &u.Email, &u.SenhaHash, &u.IdCursoAnalista, &fotoPerfil)
+	
+	if fotoPerfil != nil {
+		u.FotoPerfil = *fotoPerfil
+	}
 
 	return u, err
 }
@@ -74,13 +82,14 @@ func BuscarUsuarioPorID(id int) (structs.Usuario, error) {
 func AtualizarPerfil(u structs.Usuario) error {
 	query := `
         UPDATE usuarios 
-        SET nome_completo=$1, email=$2, senha_hash=$3
-        WHERE id_usuario=$4
+        SET nome_completo=$1, email=$2, senha_hash=$3, foto_perfil=$4
+        WHERE id_usuario=$5
     `
 	_, err := db.DB.Exec(query,
 		u.NomeCompleto,
 		u.Email,
-		u.SenhaHash, // Assume que o controller já criptografou se foi alterada
+		u.SenhaHash,
+		u.FotoPerfil,
 		u.IdUsuario,
 	)
 	return err
@@ -131,16 +140,16 @@ type AnalistaCard struct {
 	NomeCompleto     string
 	Email            string
 	CursoResponsavel string
+	FotoPerfil       string // DE VOLTA!
 }
 
-// ListarAnalistasParaSobre busca os admins e o curso que eles atendem
 func ListarAnalistasParaSobre() ([]AnalistaCard, error) {
 	query := `
-		SELECT u.nome_completo, u.email, COALESCE(c.nome_curso, 'Geral (Todos os Cursos)') as curso_responsavel
+		SELECT u.nome_completo, u.email, COALESCE(u.foto_perfil, ''), COALESCE(c.nome_curso, 'Geral (Todos os Cursos)') as curso_responsavel
 		FROM usuarios u
 		LEFT JOIN cursos c ON u.id_curso_analista = c.id_curso
 		ORDER BY c.nome_curso ASC, u.nome_completo ASC`
-		
+
 	rows, err := db.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -150,9 +159,48 @@ func ListarAnalistasParaSobre() ([]AnalistaCard, error) {
 	var lista []AnalistaCard
 	for rows.Next() {
 		var a AnalistaCard
-		if err := rows.Scan(&a.NomeCompleto, &a.Email, &a.CursoResponsavel); err == nil {
+		if err := rows.Scan(&a.NomeCompleto, &a.Email, &a.FotoPerfil, &a.CursoResponsavel); err == nil {
 			lista = append(lista, a)
 		}
 	}
 	return lista, nil
+}
+
+type AnalistaAdmin struct {
+	IdUsuario        int
+	NomeCompleto     string
+	Email            string
+	FotoPerfil       string
+	CursoResponsavel string
+	DataCadastro     time.Time
+}
+
+// ListarTodosAnalistas busca a lista de quem tem acesso ao painel
+func ListarTodosAnalistas() ([]AnalistaAdmin, error) {
+	query := `
+		SELECT u.id_usuario, u.nome_completo, u.email, COALESCE(u.foto_perfil, ''), COALESCE(c.nome_curso, 'Analista Geral (Admin)'), u.data_cadastro
+		FROM usuarios u
+		LEFT JOIN cursos c ON u.id_curso_analista = c.id_curso
+		ORDER BY u.id_usuario ASC`
+
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lista []AnalistaAdmin
+	for rows.Next() {
+		var a AnalistaAdmin
+		if err := rows.Scan(&a.IdUsuario, &a.NomeCompleto, &a.Email, &a.FotoPerfil, &a.CursoResponsavel, &a.DataCadastro); err == nil {
+			lista = append(lista, a)
+		}
+	}
+	return lista, nil
+}
+
+// DeletarAnalista exclui um acesso do sistema
+func DeletarAnalista(id int) error {
+	_, err := db.DB.Exec("DELETE FROM usuarios WHERE id_usuario = $1", id)
+	return err
 }

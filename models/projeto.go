@@ -165,22 +165,6 @@ func BuscarEquipeDoProjeto(idProjeto int) ([]structs.Aluno, error) {
 	return equipe, nil
 }
 
-func AdicionarMembroEquipe(idProjeto, idAluno int, funcao string) error {
-	query := `
-		INSERT INTO projeto_alunos (id_projeto, id_aluno, funcao_no_projeto)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (id_projeto, id_aluno) DO UPDATE 
-		SET funcao_no_projeto = EXCLUDED.funcao_no_projeto`
-	_, err := db.DB.Exec(query, idProjeto, idAluno, funcao)
-	return err
-}
-
-func RemoverMembroEquipe(idProjeto, idAluno int) error {
-	query := `DELETE FROM projeto_alunos WHERE id_projeto = $1 AND id_aluno = $2`
-	_, err := db.DB.Exec(query, idProjeto, idAluno)
-	return err
-}
-
 // PesquisarAlunosPorNome busca alunos no BD para adicionar à equipe (API)
 func PesquisarAlunosPorNome(termo string) ([]structs.Aluno, error) {
 	query := `
@@ -308,4 +292,129 @@ func ListarTodosProjetosAdmin() ([]structs.Projeto, error) {
 		}
 	}
 	return projetos, nil
+}
+
+// ListarTodasAreas busca a lista de categorias para o formulário de projetos
+func ListarTodasAreas() ([]structs.Area, error) {
+	query := `SELECT id_area, nome_area FROM areas ORDER BY nome_area ASC`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var areas []structs.Area
+	for rows.Next() {
+		var a structs.Area
+		if err := rows.Scan(&a.IdArea, &a.NomeArea); err == nil {
+			areas = append(areas, a)
+		}
+	}
+	return areas, nil
+}
+
+// BuscarProjetoPorId retorna os detalhes de um projeto específico
+func BuscarProjetoPorId(idProjeto int) (structs.Projeto, error) {
+	var p structs.Projeto
+
+	// Usamos COALESCE para evitar que o Go trave se algum campo opcional estiver NULL no banco
+	query := `
+		SELECT id_projeto, titulo, descricao, id_curso, id_area,
+			   COALESCE(semestre_letivo, ''), COALESCE(professor_orientador, ''),
+			   status_projeto, COALESCE(imagem_capa, ''), COALESCE(link_repositorio, '')
+		FROM projetos
+		WHERE id_projeto = $1`
+
+	row := db.DB.QueryRow(query, idProjeto)
+	err := row.Scan(
+		&p.IdProjeto, &p.Titulo, &p.Descricao, &p.IdCurso, &p.IdArea,
+		&p.SemestreLetivo, &p.ProfessorOrientador,
+		&p.StatusProjeto, &p.ImagemCapa, &p.LinkRepositorio,
+	)
+
+	if err != nil {
+		return p, err
+	}
+
+	// --------------------------------------------------------
+	// AQUI VAMOS BUSCAR A EQUIPE E OS ARQUIVOS (PRÓXIMO PASSO)
+	// p.Equipe = ...
+	// p.Arquivos = ...
+	// --------------------------------------------------------
+
+	return p, nil
+}
+
+// --- BUSCA O PROJETO COM TUDO DENTRO (Equipe, Links e Arquivos) ---
+func BuscarProjetoCompletoPorId(idProjeto int) (structs.Projeto, error) {
+	projeto, err := BuscarProjetoPorId(idProjeto) // Usa a função que já criamos!
+	if err != nil {
+		return projeto, err
+	}
+
+	// 1. Busca Equipe
+	queryEquipe := `
+		SELECT a.id_aluno, a.nome_completo, COALESCE(a.foto_perfil, ''), pa.funcao_no_projeto 
+		FROM projeto_alunos pa
+		JOIN alunos a ON pa.id_aluno = a.id_aluno
+		WHERE pa.id_projeto = $1`
+	rowsEq, _ := db.DB.Query(queryEquipe, idProjeto)
+	for rowsEq.Next() {
+		var membro structs.Aluno
+		var funcao string
+		rowsEq.Scan(&membro.IdAluno, &membro.NomeCompleto, &membro.FotoPerfil, &funcao)
+		membro.Biografia = funcao // Usando o campo Biografia provisoriamente para exibir a função na tela
+		projeto.Equipe = append(projeto.Equipe, membro)
+	}
+	rowsEq.Close()
+
+	// 2. Busca Links Externos
+	queryLinks := `SELECT id_link, tipo_link, url, COALESCE(descricao, '') FROM projeto_links WHERE id_projeto = $1`
+	rowsLk, _ := db.DB.Query(queryLinks, idProjeto)
+	for rowsLk.Next() {
+		var link structs.ProjetoLink
+		rowsLk.Scan(&link.IdLink, &link.TipoLink, &link.Url, &link.Descricao)
+		projeto.Links = append(projeto.Links, link)
+	}
+	rowsLk.Close()
+
+	// 3. Busca Arquivos PDF
+	queryArquivos := `SELECT id_arquivo, nome_original, caminho_arquivo FROM projeto_arquivos WHERE id_projeto = $1`
+	rowsArq, _ := db.DB.Query(queryArquivos, idProjeto)
+	for rowsArq.Next() {
+		var arq structs.ProjetoArquivo
+		rowsArq.Scan(&arq.IdArquivo, &arq.NomeOriginal, &arq.CaminhoArquivo)
+		projeto.Arquivos = append(projeto.Arquivos, arq)
+	}
+	rowsArq.Close()
+
+	return projeto, nil
+}
+
+// --- FUNÇÕES DE EQUIPE ---
+func AdicionarMembroEquipe(idProjeto, idAluno int, funcao string) error {
+	_, err := db.DB.Exec(`INSERT INTO projeto_alunos (id_projeto, id_aluno, funcao_no_projeto) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`, idProjeto, idAluno, funcao)
+	return err
+}
+
+func RemoverMembroEquipe(idProjeto, idAluno int) error {
+	_, err := db.DB.Exec(`DELETE FROM projeto_alunos WHERE id_projeto = $1 AND id_aluno = $2`, idProjeto, idAluno)
+	return err
+}
+
+// --- FUNÇÕES DE ARQUIVOS (PDF) ---
+func SalvarArquivoProjeto(idProjeto int, nomeOriginal, caminho string) error {
+	_, err := db.DB.Exec(`INSERT INTO projeto_arquivos (id_projeto, nome_original, caminho_arquivo) VALUES ($1, $2, $3)`, idProjeto, nomeOriginal, caminho)
+	return err
+}
+
+func RemoverArquivoProjeto(idArquivo int) error {
+	_, err := db.DB.Exec(`DELETE FROM projeto_arquivos WHERE id_arquivo = $1`, idArquivo)
+	return err
+}
+
+
+func RemoverLinkProjeto(idLink int) error {
+	_, err := db.DB.Exec("DELETE FROM projeto_links WHERE id_link = $1", idLink)
+	return err
 }
