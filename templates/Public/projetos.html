@@ -108,6 +108,14 @@
         .btn-details:hover {
             background: rgba(255, 153, 0, 0.2);
         }
+
+        /* Correção da cor de fundo das opções do filtro */
+        select option {
+            background-color: #18181b;
+            /* Cor de fundo escura do tema */
+            color: #ffffff;
+            /* Garante que a letra fique branca */
+        }
     </style>
 </head>
 
@@ -147,29 +155,24 @@
             <form action="/projetos" method="GET" class="filter-bar">
                 <div style="flex-grow: 1; min-width: 200px;">
                     <input type="text" name="q" placeholder="Buscar por título ou tema..." class="form-input"
-                        style="width: 100%; border: none; background: rgba(255,255,255,0.05);" value="">
+                        style="width: 100%; border: none; background: rgba(255,255,255,0.05);"
+                        value="{{ .FiltroBusca }}">
                 </div>
                 <div style="min-width: 150px;">
                     <select name="curso" class="form-input"
                         style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
                         <option value="">Todos os Cursos</option>
-                        <option value="direito">Direito</option>
-                        <option value="nutricao">Nutrição</option>
-                        <option value="ads">Análise de Sistemas</option>
-                        <option value="fisioterapia">Fisioterapia</option>
+
+                        {{ $cursoSelecionado := .FiltroCurso }}
+                        {{ range .Cursos }}
+                        <option value="{{ .NomeCurso }}" {{ if eq .NomeCurso $cursoSelecionado }}selected{{ end }}>
+                            {{ .NomeCurso }}
+                        </option>
+                        {{ end }}
                     </select>
                 </div>
-                <div style="min-width: 150px;">
-                    <select name="status" class="form-input"
-                        style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
-                        <option value="">Qualquer Status</option>
-                        <option value="Concluido">Concluído</option>
-                        <option value="Em Andamento">Em Andamento</option>
-                        <option value="Planejado">Planejado</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;"><i
-                        class="ph ph-magnifying-glass"></i> Buscar</button>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+                    <i class="ph ph-magnifying-glass"></i> Buscar</button>
             </form>
 
             <div class="talent-grid">
@@ -189,20 +192,9 @@
                             <span class="course-badge"><i class="ph ph-graduation-cap"></i> {{ if .Curso.NomeCurso }}{{
                                 .Curso.NomeCurso }}{{ else }}Multidisciplinar{{ end }}</span>
 
-                            {{ if eq .StatusProjeto "CONCLUIDO" }}
-                            <span class="status-badge"
-                                style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Concluído</span>
-                            {{ else if eq .StatusProjeto "EM_ANDAMENTO" }}
-                            <span class="status-badge"
-                                style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Em
-                                Andamento</span>
-                            {{ else }}
-                            <span class="status-badge"
-                                style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Planejado</span>
-                            {{ end }}
                         </div>
                     </div>
-                    <a href="/projeto?id={{ .IdProjeto }}" class="btn-details">Ver Documentação completa</a>
+                    <a href="/projeto?id={{ .IdProjeto }}" class="btn-details">Mais detalhes do Projeto</a>
                 </div>
                 {{ end }}
             </div>

@@ -4,6 +4,7 @@ import (
 	"log"
 	"nexhub/db"
 	"nexhub/structs"
+	"strconv"
 )
 
 // ==========================================
@@ -314,6 +315,53 @@ func ListarTodosProjetosAdmin() ([]structs.Projeto, error) {
 	return projetos, nil
 }
 
+func ListarProjetosAdmin(busca, cursoId string) ([]structs.Projeto, error) {
+	query := `
+		SELECT p.id_projeto, p.titulo, COALESCE(p.imagem_capa, ''), p.status_projeto, 
+		       COALESCE(c.id_curso, 0), COALESCE(c.nome_curso, 'Multidisciplinar')
+		FROM projetos p
+		LEFT JOIN cursos c ON p.id_curso = c.id_curso
+		WHERE 1=1
+	`
+	var args []interface{}
+	argId := 1
+
+	// Filtro por termo de busca
+	if busca != "" {
+		query += ` AND p.titulo ILIKE $` + strconv.Itoa(argId)
+		args = append(args, "%"+busca+"%")
+		argId++
+	}
+
+	// Filtro pelo curso selecionado (ou o curso padrão do usuário)
+	if cursoId != "" && cursoId != "0" {
+		query += ` AND p.id_curso = $` + strconv.Itoa(argId)
+		args = append(args, cursoId)
+		argId++
+	}
+
+	query += ` ORDER BY p.id_projeto DESC`
+
+	rows, err := db.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lista []structs.Projeto
+	for rows.Next() {
+		var p structs.Projeto
+		var c structs.Curso
+
+		// Adapte os campos do Scan de acordo com a sua Struct de Projeto
+		rows.Scan(&p.IdProjeto, &p.Titulo, &p.ImagemCapa, &p.StatusProjeto, &c.IdCurso, &c.NomeCurso)
+		p.Curso = c
+
+		lista = append(lista, p)
+	}
+	return lista, nil
+}
+
 // ListarTodasAreas busca a lista de categorias para o formulário de projetos
 func ListarTodasAreas() ([]structs.Area, error) {
 	query := `SELECT id_area, nome_area FROM areas ORDER BY nome_area ASC`
@@ -446,4 +494,84 @@ func RemoverArquivoProjeto(idArquivo int) error {
 func RemoverLinkProjeto(idLink int) error {
 	_, err := db.DB.Exec("DELETE FROM projeto_links WHERE id_link = $1", idLink)
 	return err
+}
+
+// ListarProjetosPublicos traz os projetos para a vitrine aplicando os filtros de busca
+func ListarProjetosPublicos(busca, curso, status string) ([]structs.Projeto, error) {
+	query := `
+		SELECT 
+			p.id_projeto, p.titulo, p.descricao, p.status_projeto, 
+			COALESCE(p.imagem_capa, ''), COALESCE(c.nome_curso, '')
+		FROM projetos p
+		LEFT JOIN cursos c ON p.id_curso = c.id_curso
+		WHERE p.status_projeto != 'OCULTO' 
+	`
+
+	var args []interface{}
+	argId := 1
+
+	if busca != "" {
+		query += ` AND (p.titulo ILIKE $` + strconv.Itoa(argId) + ` OR p.descricao ILIKE $` + strconv.Itoa(argId) + `)`
+		args = append(args, "%"+busca+"%", "%"+busca+"%")
+		argId += 2
+	}
+	if curso != "" {
+		query += ` AND c.nome_curso ILIKE $` + strconv.Itoa(argId)
+		args = append(args, "%"+curso+"%")
+		argId++
+	}
+	if status != "" {
+		query += ` AND p.status_projeto ILIKE $` + strconv.Itoa(argId)
+		args = append(args, "%"+status+"%")
+		argId++
+	}
+
+	query += ` ORDER BY p.id_projeto DESC`
+
+	rows, err := db.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lista []structs.Projeto
+	for rows.Next() {
+		var p structs.Projeto
+		var nomeCurso string
+		// Usamos Scan para ler do banco
+		rows.Scan(&p.IdProjeto, &p.Titulo, &p.Descricao, &p.StatusProjeto, &p.ImagemCapa, &nomeCurso)
+		p.Curso = structs.Curso{NomeCurso: nomeCurso}
+		lista = append(lista, p)
+	}
+	return lista, nil
+}
+
+// Conta o total de cursos cadastrados
+func ObterTotalCursos() int {
+	var total int
+	err := db.DB.QueryRow("SELECT COUNT(*) FROM cursos").Scan(&total)
+	if err != nil {
+		return 0
+	}
+	return total
+}
+
+// Conta o total de alunos na vitrine
+func ObterTotalAlunos() int {
+	var total int
+	err := db.DB.QueryRow("SELECT COUNT(*) FROM alunos").Scan(&total)
+	if err != nil {
+		return 0
+	}
+	return total
+}
+
+// Conta o total de projetos (que não estejam ocultos)
+func ObterTotalProjetos() int {
+	var total int
+	err := db.DB.QueryRow("SELECT COUNT(*) FROM projetos WHERE status_projeto != 'OCULTO'").Scan(&total)
+	if err != nil {
+		return 0
+	}
+	return total
 }

@@ -23,6 +23,19 @@
             align-items: center;
         }
 
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.4); /* Fundo escuro semitransparente */
+            backdrop-filter: blur(10px);    /* Efeito de desfoque atrás da barra */
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Borda fina para dar profundidade */
+            align-items: center;
+        }
+
         .talent-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -86,6 +99,14 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        /* Correção da cor de fundo das opções do filtro */
+        select option {
+            background-color: #18181b;
+            /* Cor de fundo escura do tema */
+            color: #ffffff;
+            /* Garante que a letra fique branca */
+        }
     </style>
 </head>
 
@@ -122,23 +143,28 @@
                     e as habilidades que os tornam profissionais preparados.</p>
             </div>
 
-            <form action="/talentos" method="GET" class="filter-form">
+            <form action="/talentos" method="GET" class="filter-bar">
                 <div style="flex-grow: 1; min-width: 200px;">
-                    <input type="text" name="q" placeholder="Buscar por nome ou habilidade..." class="form-input"
-                        style="width: 100%; border: none; background: rgba(255,255,255,0.05);" value="">
+                    <input type="text" name="q" placeholder="Buscar talento por nome..." class="form-input"
+                        style="width: 100%; border: none; background: rgba(255,255,255,0.05);"
+                        value="{{ .FiltroBusca }}">
                 </div>
                 <div style="min-width: 150px;">
                     <select name="curso" class="form-input"
                         style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
                         <option value="">Todos os Cursos</option>
-                        <option value="direito">Direito</option>
-                        <option value="nutricao">Nutrição</option>
-                        <option value="ads">Análise de Sistemas</option>
+
+                        {{ $cursoSelecionado := .FiltroCurso }}
+                        {{ range .Cursos }}
+                        <option value="{{ .NomeCurso }}" {{ if eq .NomeCurso $cursoSelecionado }}selected{{ end }}>
+                            {{ .NomeCurso }}
+                        </option>
+                        {{ end }}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary"
-                    style="padding: 12px 24px; background: var(--brand-teal);"><i class="ph ph-magnifying-glass"></i>
-                    Pesquisar</button>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+                    <i class="ph ph-magnifying-glass"></i> Buscar
+                </button>
             </form>
 
             <div class="talent-grid">

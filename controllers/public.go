@@ -16,16 +16,22 @@ var temp = template.Must(template.ParseGlob("templates/**/*.html"))
 // 1. PÁGINAS PRINCIPAIS (VITRINE)
 // ==========================================
 
-// IndexHandler renderiza a página inicial (Home)
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	// Futuramente, você pode criar uma função no model para buscar apenas os 3 últimos projetos
-	// projetos, _ := models.ListarUltimosProjetos(3)
-	// talentos, _ := models.ListarUltimosAlunos(4)
+	// Busca as contagens reais no banco de dados usando as funções que acabamos de criar
+	totalCursos := models.ObterTotalCursos()
+	totalAlunos := models.ObterTotalAlunos()
+	totalProjetos := models.ObterTotalProjetos()
 
+	// Empacota os dados para enviar para o HTML
 	dados := struct {
-		// Projetos []structs.Projeto
-		// Talentos []structs.Aluno
-	}{}
+		TotalCursos   int
+		TotalAlunos   int
+		TotalProjetos int
+	}{
+		TotalCursos:   totalCursos,
+		TotalAlunos:   totalAlunos,
+		TotalProjetos: totalProjetos,
+	}
 
 	temp.ExecuteTemplate(w, "Index", dados)
 }
@@ -48,15 +54,29 @@ func SobreHandler(w http.ResponseWriter, r *http.Request) {
 // ==========================================
 
 func ProjetosHandler(w http.ResponseWriter, r *http.Request) {
-	// Aqui você pode capturar filtros da URL (ex: ?curso=direito&status=concluido)
-	// busca := r.URL.Query().Get("q")
-	// idCursoStr := r.URL.Query().Get("curso")
+	// Captura os filtros que vêm da URL quando o usuário pesquisa
+	busca := r.URL.Query().Get("q")
+	curso := r.URL.Query().Get("curso")
+	status := r.URL.Query().Get("status")
 
-	// projetos, _ := models.ListarProjetosPublicos(busca, idCursoStr)
+	// Puxa do Model
+	projetos, _ := models.ListarProjetosPublicos(busca, curso, status)
 
+	// 🌟 NOVO: Busca a lista de cursos dinamicamente
+	cursos, _ := models.ListarTodosCursos()
+
+	// Monta a caixa de dados para o HTML
 	dados := struct {
-		// Projetos []structs.Projeto
-	}{}
+		Projetos    []structs.Projeto
+		Cursos      []structs.Curso // Passamos a lista de cursos
+		FiltroCurso string          // Guarda qual curso ele pesquisou
+		FiltroBusca string          // Guarda o termo de busca
+	}{
+		Projetos:    projetos,
+		Cursos:      cursos,
+		FiltroCurso: curso,
+		FiltroBusca: busca,
+	}
 
 	temp.ExecuteTemplate(w, "ProjetosPublicos", dados)
 }
@@ -92,13 +112,26 @@ func DetalheProjetoHandler(w http.ResponseWriter, r *http.Request) {
 // ==========================================
 
 func TalentosHandler(w http.ResponseWriter, r *http.Request) {
-	// Busca todos os alunos cadastrados pelos Admins
-	alunos, _ := models.ListarAlunos()
+	// 1. Captura os filtros da URL
+	busca := r.URL.Query().Get("q")
+	curso := r.URL.Query().Get("curso")
+
+	// 2. Busca os alunos filtrados
+	alunos, _ := models.ListarTalentosPublicos(busca, curso)
+
+	// 3. Busca a lista de cursos dinamicamente (reutilizando a função que criamos)
+	cursos, _ := models.ListarTodosCursos()
 
 	dados := struct {
-		Alunos []structs.Aluno
+		Alunos      []structs.Aluno
+		Cursos      []structs.Curso
+		FiltroCurso string
+		FiltroBusca string
 	}{
-		Alunos: alunos,
+		Alunos:      alunos,
+		Cursos:      cursos,
+		FiltroCurso: curso,
+		FiltroBusca: busca,
 	}
 
 	temp.ExecuteTemplate(w, "TalentosPublicos", dados)

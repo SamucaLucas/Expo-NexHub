@@ -3,6 +3,7 @@ package models
 import (
 	"nexhub/db"
 	"nexhub/structs"
+	"strconv"
 )
 
 // CriarAluno insere um novo perfil na vitrine (ação executada pelo Admin)
@@ -87,6 +88,107 @@ func ListarAlunos() ([]structs.Aluno, error) {
 	}
 
 	return alunos, nil
+}
+
+func ListarAlunosAdmin(busca, cursoId string) ([]structs.Aluno, error) {
+	query := `
+		SELECT a.id_aluno, a.nome_completo, COALESCE(a.foto_perfil, ''), COALESCE(a.semestre_atual, 0),
+		       COALESCE(c.id_curso, 0), COALESCE(c.nome_curso, 'Não informado')
+		FROM alunos a
+		LEFT JOIN cursos c ON a.id_curso = c.id_curso
+		WHERE 1=1
+	`
+
+	var args []interface{}
+	argId := 1
+
+	// 1. Filtro por Nome (Pesquisa na barra)
+	if busca != "" {
+		query += ` AND a.nome_completo ILIKE $` + strconv.Itoa(argId)
+		args = append(args, "%"+busca+"%")
+		argId++
+	}
+
+	// 2. Filtro por Curso (Automático do usuário logado ou selecionado na tela)
+	if cursoId != "" && cursoId != "0" {
+		query += ` AND a.id_curso = $` + strconv.Itoa(argId)
+		args = append(args, cursoId)
+		argId++
+	}
+
+	query += ` ORDER BY a.nome_completo ASC`
+
+	rows, err := db.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lista []structs.Aluno
+	for rows.Next() {
+		var a structs.Aluno
+		var c structs.Curso
+
+		// Mapeia as colunas do SELECT para as structs
+		err := rows.Scan(&a.IdAluno, &a.NomeCompleto, &a.FotoPerfil, &a.SemestreAtual, &c.IdCurso, &c.NomeCurso)
+		if err == nil {
+			a.Curso = c // Coloca o curso dentro do objeto do aluno
+			lista = append(lista, a)
+		}
+	}
+
+	return lista, nil
+}
+
+func ListarTalentosPublicos(busca, curso string) ([]structs.Aluno, error) {
+	// Começamos com a query base buscando os dados do aluno e o nome do curso
+	query := `
+		SELECT a.id_aluno, a.nome_completo, COALESCE(a.foto_perfil, ''), 
+		       COALESCE(a.biografia, ''), COALESCE(c.nome_curso, '')
+		FROM alunos a
+		LEFT JOIN cursos c ON a.id_curso = c.id_curso
+		WHERE 1=1
+	`
+
+	var args []interface{}
+	argId := 1
+
+	// Filtro por Nome (Busca textual)
+	if busca != "" {
+		query += ` AND a.nome_completo ILIKE $` + strconv.Itoa(argId)
+		args = append(args, "%"+busca+"%")
+		argId++
+	}
+
+	// Filtro por Curso
+	if curso != "" {
+		query += ` AND c.nome_curso = $` + strconv.Itoa(argId)
+		args = append(args, curso)
+		argId++
+	}
+
+	query += ` ORDER BY a.nome_completo ASC`
+
+	rows, err := db.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lista []structs.Aluno
+	for rows.Next() {
+		var a structs.Aluno
+		var nomeCurso string
+
+		// 1. Mapeia os dados do banco
+		rows.Scan(&a.IdAluno, &a.NomeCompleto, &a.FotoPerfil, &a.Biografia, &nomeCurso)
+
+		// 2. CORREÇÃO: Guarda o nome do curso na struct aninhada, sem converter nada!
+		a.Curso = structs.Curso{NomeCurso: nomeCurso}
+
+		lista = append(lista, a)
+	}
+	return lista, nil
 }
 
 // AtualizarAluno modifica APENAS OS DADOS TEXTUAIS do aluno

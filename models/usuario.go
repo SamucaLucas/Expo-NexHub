@@ -64,13 +64,13 @@ func BuscarUsuarioPorID(id int) (structs.Usuario, error) {
 		SELECT id_usuario, nome_completo, email, senha_hash, id_curso_analista, foto_perfil 
 		FROM usuarios 
 		WHERE id_usuario = $1`
-		
+
 	row := db.DB.QueryRow(query, id)
-	
-	var fotoPerfil *string 
+
+	var fotoPerfil *string
 	// Agora pegando o &u.SenhaHash na ordem certa do SELECT
 	err := row.Scan(&u.IdUsuario, &u.NomeCompleto, &u.Email, &u.SenhaHash, &u.IdCursoAnalista, &fotoPerfil)
-	
+
 	if fotoPerfil != nil {
 		u.FotoPerfil = *fotoPerfil
 	}
@@ -82,14 +82,15 @@ func BuscarUsuarioPorID(id int) (structs.Usuario, error) {
 func AtualizarPerfil(u structs.Usuario) error {
 	query := `
         UPDATE usuarios 
-        SET nome_completo=$1, email=$2, senha_hash=$3, foto_perfil=$4
-        WHERE id_usuario=$5
+        SET nome_completo=$1, email=$2, senha_hash=$3, foto_perfil=$4, id_curso_analista = $5
+        WHERE id_usuario=$6
     `
 	_, err := db.DB.Exec(query,
 		u.NomeCompleto,
 		u.Email,
 		u.SenhaHash,
 		u.FotoPerfil,
+		u.IdCursoAnalista,
 		u.IdUsuario,
 	)
 	return err
@@ -117,6 +118,7 @@ func EmailJaCadastrado(email string) bool {
 }
 
 // ListarTodosCursos busca a lista para popular o formulário de cadastro
+// ListarTodosCursos busca todos os cursos cadastrados para o filtro da vitrine
 func ListarTodosCursos() ([]structs.Curso, error) {
 	query := `SELECT id_curso, nome_curso FROM cursos ORDER BY nome_curso ASC`
 	rows, err := db.DB.Query(query)
@@ -128,6 +130,8 @@ func ListarTodosCursos() ([]structs.Curso, error) {
 	var cursos []structs.Curso
 	for rows.Next() {
 		var c structs.Curso
+		// Verifica se a struct Curso no seu types.go tem esses exatos campos.
+		// Se forem diferentes, ajuste aqui (ex: c.ID, c.Nome)
 		if err := rows.Scan(&c.IdCurso, &c.NomeCurso); err == nil {
 			cursos = append(cursos, c)
 		}
@@ -181,7 +185,7 @@ func ListarTodosAnalistas() ([]AnalistaAdmin, error) {
 		SELECT u.id_usuario, u.nome_completo, u.email, COALESCE(u.foto_perfil, ''), COALESCE(c.nome_curso, 'Analista Geral (Admin)'), u.data_cadastro
 		FROM usuarios u
 		LEFT JOIN cursos c ON u.id_curso_analista = c.id_curso
-		ORDER BY u.id_usuario ASC`
+		ORDER BY u.nome_completo ASC`
 
 	rows, err := db.DB.Query(query)
 	if err != nil {

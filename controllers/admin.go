@@ -32,7 +32,6 @@ func AdminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	temp.ExecuteTemplate(w, "AdminDashboard", dados)
 }
-
 func AdminPerfilHandler(w http.ResponseWriter, r *http.Request) {
 	user := GetUserFromSession(r)
 	if user.IdUsuario == 0 {
@@ -40,10 +39,22 @@ func AdminPerfilHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Busca os cursos para jogar no dropdown do HTML
+	cursos, _ := models.ListarTodosCursos()
+
+	usuarioIdCurso := 0
+	if user.IdCursoAnalista != nil {
+		usuarioIdCurso = *user.IdCursoAnalista
+	}
+
 	dados := struct {
-		Usuario structs.Usuario
+		Usuario        structs.Usuario
+		Cursos         []structs.Curso
+		UsuarioIdCurso int
 	}{
-		Usuario: user,
+		Usuario:        user,
+		Cursos:         cursos,
+		UsuarioIdCurso: usuarioIdCurso,
 	}
 	temp.ExecuteTemplate(w, "AdminPerfil", dados)
 }
@@ -55,37 +66,42 @@ func AdminSalvarPerfilHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseMultipartForm(10 << 20) // 10MB limite para a foto
+	r.ParseMultipartForm(10 << 20)
 
 	nome := r.FormValue("nome")
 	email := r.FormValue("email")
 	novaSenha := r.FormValue("nova_senha")
 	confSenha := r.FormValue("confirmar_senha")
 
+	// ✨ CAPTURANDO O CURSO AQUI
+	idCursoStr := r.FormValue("id_curso_analista")
+
 	if novaSenha != "" && novaSenha != confSenha {
 		http.Redirect(w, r, "/admin/perfil?erro=senhas_nao_conferem", http.StatusSeeOther)
 		return
 	}
 
-	// -----------------------------------------------------
-	// UPLOAD DA FOTO DO ADMIN (Pasta: /uploads/admins/)
-	// -----------------------------------------------------
+	// ✨ TRATANDO O PONTEIRO PARA SALVAR NO BANCO
+	if idCursoStr != "" && idCursoStr != "0" {
+		id, _ := strconv.Atoi(idCursoStr)
+		user.IdCursoAnalista = &id
+	} else {
+		user.IdCursoAnalista = nil // Se for "Administrador Geral", fica NULL no banco
+	}
+
+	// Upload da foto...
 	file, handler, err := r.FormFile("foto_perfil")
 	if err == nil {
 		defer file.Close()
 		nomeArquivo := fmt.Sprintf("admin_%d_%s", time.Now().Unix(), handler.Filename)
 		pastaDestino := "static/uploads/admins"
-
 		os.MkdirAll(pastaDestino, os.ModePerm)
-
 		caminhoDisco := pastaDestino + "/" + nomeArquivo
-		caminhoBanco := "/" + pastaDestino + "/" + nomeArquivo
-
 		dst, errCreate := os.Create(caminhoDisco)
 		if errCreate == nil {
 			defer dst.Close()
 			if _, errCopy := io.Copy(dst, file); errCopy == nil {
-				user.FotoPerfil = caminhoBanco
+				user.FotoPerfil = "/" + caminhoDisco
 			}
 		}
 	}
@@ -93,9 +109,6 @@ func AdminSalvarPerfilHandler(w http.ResponseWriter, r *http.Request) {
 	user.NomeCompleto = nome
 	user.Email = email
 
-	// --- CORREÇÃO DA SENHA AQUI ---
-	// Se a pessoa digitou uma nova senha, a gente criptografa.
-	// Se não digitou (""), o user.SenhaHash continua intacto com a senha antiga!
 	if novaSenha != "" {
 		hash, errHash := bcrypt.GenerateFromPassword([]byte(novaSenha), bcrypt.DefaultCost)
 		if errHash == nil {
@@ -103,6 +116,7 @@ func AdminSalvarPerfilHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// ✨ SALVANDO!
 	err = models.AtualizarPerfil(user)
 	if err != nil {
 		http.Redirect(w, r, "/admin/perfil?erro=banco", http.StatusSeeOther)
@@ -123,17 +137,30 @@ func AdminAlunosHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listaAlunos, _ := models.ListarAlunos()
-	cursos, _ := models.ListarTodosCursos() // Busca a lista de cursos para o formulário
+	busca := r.URL.Query().Get("q")
+	cursoStr := r.URL.Query().Get("curso")
+
+	// 🔥 Força o curso do usuário como padrão se ele não filtrou nada
+	if !r.URL.Query().Has("curso") && user.IdCursoAnalista != nil {
+		cursoStr = strconv.Itoa(*user.IdCursoAnalista)
+	}
+
+	// Chama o Model passando os filtros
+	alunos, _ := models.ListarAlunosAdmin(busca, cursoStr)
+	cursos, _ := models.ListarTodosCursos()
 
 	dados := struct {
-		Usuario structs.Usuario
-		Alunos  []structs.Aluno
-		Cursos  []structs.Curso // Adicionamos os cursos aqui
+		Usuario     structs.Usuario
+		Alunos      []structs.Aluno
+		Cursos      []structs.Curso
+		FiltroBusca string
+		FiltroCurso string
 	}{
-		Usuario: user,
-		Alunos:  listaAlunos,
-		Cursos:  cursos,
+		Usuario:     user,
+		Alunos:      alunos, // Lista já filtrada
+		Cursos:      cursos, // Lista para o <select>
+		FiltroBusca: busca,
+		FiltroCurso: cursoStr,
 	}
 
 	temp.ExecuteTemplate(w, "AdminAlunos", dados)
@@ -207,10 +234,6 @@ func AdminExcluirAlunoHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/alunos", http.StatusSeeOther)
 }
 
-// ==========================================
-// 3. GESTÃO DE PROJETOS
-// ==========================================
-
 func AdminProjetosHandler(w http.ResponseWriter, r *http.Request) {
 	user := GetUserFromSession(r)
 	if user.IdUsuario == 0 {
@@ -218,20 +241,30 @@ func AdminProjetosHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listaProjetos, _ := models.ListarTodosProjetosAdmin()
-	cursos, _ := models.ListarTodosCursos() // Busca os cursos para o Modal
-	areas, _ := models.ListarTodasAreas()
+	busca := r.URL.Query().Get("q")
+	cursoStr := r.URL.Query().Get("curso")
+
+	// 🔥 Força o curso do usuário como padrão se ele não filtrou nada
+	if !r.URL.Query().Has("curso") && user.IdCursoAnalista != nil {
+		cursoStr = strconv.Itoa(*user.IdCursoAnalista)
+	}
+
+	// 👉 AGORA SIM: Chamamos a função e passamos para o HTML
+	projetos, _ := models.ListarProjetosAdmin(busca, cursoStr)
+	cursos, _ := models.ListarTodosCursos()
 
 	dados := struct {
-		Usuario  structs.Usuario
-		Projetos []structs.Projeto
-		Cursos   []structs.Curso
-		Areas    []structs.Area
+		Usuario     structs.Usuario
+		Projetos    []structs.Projeto
+		Cursos      []structs.Curso
+		FiltroBusca string
+		FiltroCurso string
 	}{
-		Usuario:  user,
-		Projetos: listaProjetos,
-		Cursos:   cursos,
-		Areas:    areas,
+		Usuario:     user,
+		Projetos:    projetos, // 🚨 ESSA LINHA ESTAVA COMENTADA ANTES!
+		Cursos:      cursos,
+		FiltroBusca: busca,
+		FiltroCurso: cursoStr,
 	}
 
 	temp.ExecuteTemplate(w, "AdminProjetos", dados)
