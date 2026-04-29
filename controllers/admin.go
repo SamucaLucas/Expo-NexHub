@@ -253,16 +253,20 @@ func AdminProjetosHandler(w http.ResponseWriter, r *http.Request) {
 	projetos, _ := models.ListarProjetosAdmin(busca, cursoStr)
 	cursos, _ := models.ListarTodosCursos()
 
+	areas, _ := models.ListarTodasAreas()
+
 	dados := struct {
 		Usuario     structs.Usuario
 		Projetos    []structs.Projeto
 		Cursos      []structs.Curso
+		Areas       []structs.Area
 		FiltroBusca string
 		FiltroCurso string
 	}{
 		Usuario:     user,
 		Projetos:    projetos, // 🚨 ESSA LINHA ESTAVA COMENTADA ANTES!
 		Cursos:      cursos,
+		Areas:       areas,
 		FiltroBusca: busca,
 		FiltroCurso: cursoStr,
 	}
