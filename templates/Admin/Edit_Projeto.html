@@ -405,7 +405,7 @@
                         <input type="hidden" name="id_projeto" value="{{ .Projeto.IdProjeto }}">
                         <select name="id_aluno" class="form-input" required style="cursor: pointer; flex-grow: 1;">
                             <option value="" disabled selected>Selecionar Aluno...</option>
-                            {{ range .Alunos }}<option value="{{ .IdAluno }}">{{ .NomeCompleto }}</option>{{ end }}
+                            {{ range .Alunos }}<option value="{{ .IdAluno }}">{{ .NomeCompleto }}   </option>{{ end }}
                         </select>
                         <input type="text" name="funcao" placeholder="Função" class="form-input" style="width: 120px;"
                             required>

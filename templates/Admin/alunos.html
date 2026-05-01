@@ -531,8 +531,11 @@
                         <label class="form-label">Curso</label>
                         <select name="id_curso" class="form-input" required style="cursor: pointer;">
                             <option value="" disabled selected>Selecione o Curso...</option>
+                            
                             {{ range .Cursos }}
-                            <option value="{{ .IdCurso }}">{{ .NomeCurso }}</option>
+                            <option value="{{ .IdCurso }}" {{ if eq (print .IdCurso) $cursoAtual }}selected{{ end }}>
+                            {{ .NomeCurso }}
+                        </option>
                             {{ end }}
                         </select>
                     </div>

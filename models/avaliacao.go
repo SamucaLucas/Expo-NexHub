@@ -69,7 +69,7 @@ func BuscarAvaliacoesDoProjeto(idProjeto int) ([]structs.Avaliacao, error) {
 	for rows.Next() {
 		var a structs.Avaliacao
 		// O Scan deve bater com a struct e a ordem do SELECT
-		if err := rows.Scan(&a.Email, &a.Nota, &a.Comentario, &a.NomeAvaliador); err != nil {
+		if err := rows.Scan(&a.EmailAvaliador, &a.Nota, &a.Comentario, &a.NomeAvaliador); err != nil {
 			continue
 		}
 		lista = append(lista, a)
@@ -88,7 +88,7 @@ func SalvarAvaliacao(a structs.Avaliacao) error {
 		INSERT INTO avaliacoes (id_projeto, email_avaliador, nota, comentario, nome_avaliador)
 		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err = tx.Exec(queryInsert, a.IdProjeto, a.Email, a.Nota, a.Comentario, a.NomeAvaliador)
+	_, err = tx.Exec(queryInsert, a.IdProjeto, a.EmailAvaliador, a.Nota, a.Comentario, a.NomeAvaliador)
 	if err != nil {
 		tx.Rollback()
 		return err // Retorna o erro ORIGINAL do banco (ex: duplicate key)

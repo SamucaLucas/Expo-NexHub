@@ -617,7 +617,10 @@
                                     🌍 Multidisciplinar (Vários Cursos)
                                 </option>
                                 {{ range .Cursos }}
-                                <option value="{{ .IdCurso }}">{{ .NomeCurso }}</option>
+                                <option value="{{ .IdCurso }}" {{ if eq (print .IdCurso) $cursoAtual }}selected{{ end
+                                    }}>
+                                    {{ .NomeCurso }}
+                                </option>
                                 {{ end }}
                             </select>
                         </div>

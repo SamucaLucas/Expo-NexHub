@@ -109,12 +109,9 @@
             background: rgba(255, 153, 0, 0.2);
         }
 
-        /* Correção da cor de fundo das opções do filtro */
         select option {
             background-color: #18181b;
-            /* Cor de fundo escura do tema */
             color: #ffffff;
-            /* Garante que a letra fique branca */
         }
     </style>
 </head>
@@ -162,7 +159,6 @@
                     <select name="curso" class="form-input"
                         style="width: 100%; border: none; background: rgba(255,255,255,0.05); cursor: pointer;">
                         <option value="">Todos os Cursos</option>
-
                         {{ $cursoSelecionado := .FiltroCurso }}
                         {{ range .Cursos }}
                         <option value="{{ .NomeCurso }}" {{ if eq .NomeCurso $cursoSelecionado }}selected{{ end }}>
@@ -172,7 +168,8 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
-                    <i class="ph ph-magnifying-glass"></i> Buscar</button>
+                    <i class="ph ph-magnifying-glass"></i> Buscar
+                </button>
             </form>
 
             <div class="talent-grid">
@@ -189,9 +186,15 @@
                         <p class="project-desc">{{ .Descricao }}</p>
 
                         <div class="project-meta">
-                            <span class="course-badge"><i class="ph ph-graduation-cap"></i> {{ if .Curso.NomeCurso }}{{
-                                .Curso.NomeCurso }}{{ else }}Multidisciplinar{{ end }}</span>
+                            <span class="course-badge"><i class="ph ph-graduation-cap"></i>
+                                {{ if .Curso.NomeCurso }}{{ .Curso.NomeCurso }}{{ else }}Multidisciplinar{{ end }}
+                            </span>
 
+                            <!-- ✨ NOVA TAG DE ESTRELAS AQUI ✨ -->
+                            <span
+                                style="display: flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: bold; color: var(--brand-orange); background: rgba(255, 153, 0, 0.1); padding: 4px 10px; border-radius: 50px;">
+                                <i class="ph-fill ph-star"></i> {{ printf "%.1f" .MediaEstrelas }}
+                            </span>
                         </div>
                     </div>
                     <a href="/projeto?id={{ .IdProjeto }}" class="btn-details">Mais detalhes do Projeto</a>

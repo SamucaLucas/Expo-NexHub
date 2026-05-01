@@ -97,7 +97,8 @@
             {{ range .Analistas }}
             <div class="talent-card">
                 {{ if .FotoPerfil }} <img src="{{ .FotoPerfil }}" class="analyst-avatar"> {{ else }} <img
-                    src="https://api.dicebear.com..." class="analyst-avatar"> {{ end }}
+                    src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ .NomeCompleto }}" class="analyst-avatar"> {{
+                end }}
 
                 <h3 style="font-size: 1.25rem; color: white; margin-bottom: 8px;">{{ .NomeCompleto }}</h3>
 
@@ -108,7 +109,8 @@
                 </div>
 
                 <p style="color: #a1a1aa; font-size: 0.85rem; margin-bottom: 20px;">
-                    <i class="ph ph-student" style="color: var(--brand-orange);"></i> Estudante de Análise e Desenvolvimento de Sistemas
+                    <i class="ph ph-student" style="color: var(--brand-orange);"></i> Estudante de Análise e
+                    Desenvolvimento de Sistemas
                 </p>
 
                 <a href="mailto:{{ .Email }}" class="btn btn-ghost"

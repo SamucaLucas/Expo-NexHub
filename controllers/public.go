@@ -192,9 +192,9 @@ func SalvarAvaliacaoHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			novaAvaliacao := structs.Avaliacao{ // ou models.Avaliacao
-				IdProjeto:     idProjeto,
+				IdProjeto:     &idProjeto,
 				NomeAvaliador: nome,
-				Email:         email,
+				EmailAvaliador: email,
 				Nota:          nota,
 				Comentario:    comentario,
 			}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"nexhub/db"
 	"nexhub/models"
 	"nexhub/structs"
 	"os"
@@ -338,7 +339,7 @@ func AdminSalvarProjetoHandler(w http.ResponseWriter, r *http.Request) {
 		urlYoutube := r.FormValue("url_youtube")
 		if urlYoutube != "" {
 			models.AdicionarLinkProjeto(structs.ProjetoLink{
-				IdProjeto: idProjetoGerado,
+				IdProjeto: &idProjetoGerado,
 				TipoLink:  "YOUTUBE",
 				Url:       urlYoutube,
 			})
@@ -361,9 +362,9 @@ func AdminAlterarStatusProjetoHandler(w http.ResponseWriter, r *http.Request) {
 
 	if id > 0 {
 		if acao == "ocultar" {
-			// models.AtualizarStatusProjeto(id, "OCULTO")
+			db.DB.Exec("UPDATE projetos SET status_projeto = 'OCULTO' WHERE id_projeto = $1", id)
 		} else if acao == "aprovar" {
-			// models.AtualizarStatusProjeto(id, "EM_ANDAMENTO")
+			db.DB.Exec("UPDATE projetos SET status_projeto = 'EM_ANDAMENTO' WHERE id_projeto = $1", id)
 		}
 	}
 	http.Redirect(w, r, "/admin/projetos", http.StatusSeeOther)
@@ -517,7 +518,7 @@ func AdminProjetoRemoverEquipeHandler(w http.ResponseWriter, r *http.Request) {
 func AdminProjetoAdicionarLinkHandler(w http.ResponseWriter, r *http.Request) {
 	idProjeto, _ := strconv.Atoi(r.FormValue("id_projeto"))
 	link := structs.ProjetoLink{
-		IdProjeto: idProjeto,
+		IdProjeto: &idProjeto,
 		TipoLink:  r.FormValue("tipo_link"),
 		Url:       r.FormValue("url"),
 	}
@@ -574,9 +575,31 @@ func AdminProjetoRemoverArquivoHandler(w http.ResponseWriter, r *http.Request) {
 	idProjeto := r.URL.Query().Get("id_projeto")
 
 	if idArquivo > 0 {
+		// 1. Busca o caminho do arquivo no banco ANTES de excluir o registro
+		var caminhoBanco string
+		err := db.DB.QueryRow("SELECT caminho_arquivo FROM projeto_arquivos WHERE id_arquivo = $1", idArquivo).Scan(&caminhoBanco)
+
+		// Se encontrou o caminho, tenta deletar do HD
+		if err == nil && len(caminhoBanco) > 0 {
+			// Remove a barra inicial se houver (ex: transforma "/static/..." em "static/...")
+			caminhoFisico := caminhoBanco
+			if caminhoFisico[0] == '/' {
+				caminhoFisico = caminhoFisico[1:]
+			}
+
+			// O os.Remove faz a mágica de apagar do HD
+			errRemove := os.Remove(caminhoFisico)
+			if errRemove != nil {
+				fmt.Println("Aviso: Arquivo físico não encontrado ou não pôde ser apagado:", errRemove)
+			} else {
+				fmt.Println("🗑️ Arquivo físico apagado com sucesso:", caminhoFisico)
+			}
+		}
+
+		// 2. Agora sim, deleta do banco de dados (chama a sua função do model)
 		models.RemoverArquivoProjeto(idArquivo)
-		// Nota: Para ser 100% limpo, você pode usar os.Remove() aqui para apagar do HD também!
 	}
+
 	http.Redirect(w, r, "/admin/projetos/editar?id="+idProjeto, http.StatusSeeOther)
 }
 

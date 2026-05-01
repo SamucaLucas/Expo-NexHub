@@ -366,6 +366,7 @@
     </div>
 
     <script>
+        // 1. Validação de E-mail
         function traduzirErro(mensagem) {
             if (mensagem && (mensagem.includes("no such host") || mensagem.includes("lookup"))) {
                 return "Domínio de e-mail inexistente. Verifique a digitação.";
@@ -381,9 +382,11 @@
             const feedback = document.getElementById('email-feedback');
             const btn = document.getElementById('btn-submit');
             if (!email) { feedback.innerText = ""; input.style.borderColor = ""; return; }
+
             feedback.innerText = "Verificando e-mail...";
-            feedback.style.color = "var(--text-secondary)";
+            feedback.style.color = "var(--text-gray)";
             btn.disabled = true;
+
             fetch(`/api/validar-email?email=${encodeURIComponent(email)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -401,22 +404,55 @@
                         btn.style.opacity = "1";
                     }
                 })
-                .catch(err => { console.error(err); feedback.innerText = "Erro na validação."; btn.disabled = false; });
+                .catch(err => {
+                    console.error(err);
+                    feedback.innerText = "Erro na validação.";
+                    btn.disabled = false;
+                });
         }
 
+        // 2. Lógica Blindada das Estrelas (com Hover)
         const stars = document.querySelectorAll('.star-btn');
         const notaInput = document.getElementById('nota_input');
+        const starContainer = document.getElementById('star-rating');
+
+        // Função que troca as classes do Phosphor Icons corretamente
+        function atualizarEstrelas(nota) {
+            stars.forEach(s => {
+                const sVal = parseInt(s.getAttribute('data-value'));
+                if (sVal <= nota) {
+                    s.classList.add('ph-fill');
+                    s.classList.remove('ph');
+                    s.style.color = 'var(--brand-orange)';
+                } else {
+                    s.classList.remove('ph-fill');
+                    s.classList.add('ph');
+                    s.style.color = '#3f3f46'; // Cinza escuro
+                }
+            });
+        }
+
         stars.forEach(star => {
+            // Efeito ao clicar (Salva a nota no input escondido)
             star.addEventListener('click', function () {
-                const value = this.getAttribute('data-value');
+                const value = parseInt(this.getAttribute('data-value'));
                 notaInput.value = value;
-                stars.forEach(s => {
-                    const sVal = s.getAttribute('data-value');
-                    s.classList.toggle('ph-fill', sVal <= value);
-                    s.style.color = sVal <= value ? 'var(--brand-orange)' : '#3f3f46';
-                });
+                atualizarEstrelas(value);
+            });
+
+            // Efeito de passar o mouse (Pré-visualiza a nota)
+            star.addEventListener('mouseover', function () {
+                const value = parseInt(this.getAttribute('data-value'));
+                atualizarEstrelas(value);
             });
         });
+
+        // Quando o mouse sai da área das estrelas, volta para a nota que está salva no input
+        if (starContainer) {
+            starContainer.addEventListener('mouseout', function () {
+                atualizarEstrelas(parseInt(notaInput.value));
+            });
+        }
     </script>
 </body>
 
